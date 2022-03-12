@@ -14,7 +14,7 @@ namespace thh
     std::unordered_map<Key, typed_handle_t<default_tag_t>> handles_;
 
   public:
-    void insert(value_type&& value)
+    void insert(const value_type& value)
     {
       const auto handle = values_.add(value.second);
       handles_.insert({value.first, handle});
@@ -33,9 +33,6 @@ namespace thh
       return values_.begin();
     }
 
-    auto end() -> typename decltype(values_)::iterator
-    {
-      return values_.end();
-    }
+    auto end() -> typename decltype(values_)::iterator { return values_.end(); }
   };
 } // namespace thh
