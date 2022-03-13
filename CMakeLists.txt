@@ -4,7 +4,9 @@ project(thh_map LANGUAGES CXX)
 include(FetchContent)
 
 FetchContent_Declare(
-  thh_handles SOURCE_DIR /Users/tomhultonharrop/Documents/Projects/cpp-handles)
+  thh_handles
+  GIT_REPOSITORY https://github.com/pr0g/cpp-handle-container.git
+  GIT_TAG 91874a5e22e1cd7ddfbd5cb01a1aa11d8c433e96)
 FetchContent_MakeAvailable(thh_handles)
 
 add_library(${PROJECT_NAME} INTERFACE)
