@@ -20,6 +20,12 @@ namespace thh
       handles_.insert({value.first, handle});
     }
 
+    void reserve(int32_t capacity)
+    {
+      values_.reserve(capacity);
+      handles_.reserve(capacity);
+    }
+
     template<typename Fn>
     void call(const Key& key, Fn&& fn)
     {
