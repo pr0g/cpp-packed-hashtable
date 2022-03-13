@@ -5,7 +5,6 @@
 #include <cstdint>
 
 constexpr int size = 4096;
-constexpr int half_size = size / 2;
 
 struct object_t
 {
@@ -24,9 +23,8 @@ static void iterate_lookup(benchmark::State& state)
     char data_element = 0;
     std::for_each(
       look_up_table.begin(), look_up_table.end(),
-      [&data_element](auto& value) { data_element = value.data_[half_size]; });
+      [&data_element](auto& value) { data_element = value.data_[0]; });
     benchmark::DoNotOptimize(data_element);
-    benchmark::ClobberMemory();
   }
 }
 
@@ -43,11 +41,9 @@ static void iterate_map(benchmark::State& state)
   for ([[maybe_unused]] auto _ : state) {
     char data_element = 0;
     std::for_each(
-      look_up_map.begin(), look_up_map.end(), [&data_element](auto& value) {
-        data_element = value.second.data_[half_size];
-      });
+      look_up_map.begin(), look_up_map.end(),
+      [&data_element](auto& value) { data_element = value.second.data_[0]; });
     benchmark::DoNotOptimize(data_element);
-    benchmark::ClobberMemory();
   }
 }
 
@@ -61,17 +57,16 @@ static void find_lookup(benchmark::State& state)
     look_up_table.insert({std::string("name") + std::to_string(i), object_t{}});
   }
 
-  const auto lookup = std::string("name") + std::to_string(half_size);
+  const auto lookup = std::string("name") + std::to_string(state.range(0) / 2);
   for ([[maybe_unused]] auto _ : state) {
     char data_element = 0;
-    look_up_table.call(lookup, [&data_element](auto& value) {
-      data_element = value.data_[half_size];
-    });
-    benchmark::ClobberMemory();
+    look_up_table.call(
+      lookup, [&data_element](auto& value) { data_element = value.data_[0]; });
+    benchmark::DoNotOptimize(data_element);
   }
 }
 
-BENCHMARK(find_lookup)->RangeMultiplier(2)->Range(32, 8 << 12);
+// BENCHMARK(find_lookup)->RangeMultiplier(2)->Range(32, 8 << 12);
 
 static void find_map(benchmark::State& state)
 {
@@ -81,17 +76,16 @@ static void find_map(benchmark::State& state)
     look_up_map.insert({std::string("name") + std::to_string(i), object_t{}});
   }
 
-  const auto lookup = std::string("name") + std::to_string(half_size);
+  const auto lookup = std::string("name") + std::to_string(state.range(0) / 2);
   for ([[maybe_unused]] auto _ : state) {
     char data_element = 0;
     if (auto found = look_up_map.find(lookup); found != look_up_map.end()) {
-      data_element = found->second.data_[half_size];
+      data_element = found->second.data_[0];
     }
     benchmark::DoNotOptimize(data_element);
-    benchmark::ClobberMemory();
   }
 }
 
-BENCHMARK(find_map)->RangeMultiplier(2)->Range(32, 8 << 12);
+// BENCHMARK(find_map)->RangeMultiplier(2)->Range(32, 8 << 12);
 
 BENCHMARK_MAIN();
