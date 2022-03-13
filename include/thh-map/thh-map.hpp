@@ -6,7 +6,7 @@
 namespace thh
 {
   template<typename Key, typename Value>
-  class lookup_table_t
+  class dense_map_t
   {
     using value_type = std::pair<const Key, Value>;
 

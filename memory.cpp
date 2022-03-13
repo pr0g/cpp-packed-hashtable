@@ -71,7 +71,7 @@ int main(int argc, char** argv)
 
   std::cout << "lookup\n";
   for (const int size : sizes) {
-    thh::lookup_table_t<std::string, object_t> lookup_table;
+    thh::dense_map_t<std::string, object_t> lookup_table;
     lookup_table.reserve(size);
     for (int i = 0; i < size; ++i) {
       lookup_table.insert(std::pair(std::to_string(i), object_t{}));
