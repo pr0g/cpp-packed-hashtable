@@ -17,7 +17,13 @@ namespace thh
     void insert(const value_type& value)
     {
       const auto handle = values_.add(value.second);
-      handles_.insert({value.first, handle});
+      handles_.emplace(value.first, handle);
+    }
+
+    void insert(value_type&& value)
+    {
+      const auto handle = values_.add(std::move(value).second);
+      handles_.emplace(std::move(value).first, handle);
     }
 
     void reserve(int32_t capacity)
@@ -32,6 +38,13 @@ namespace thh
       if (auto lookup = handles_.find(key); lookup != handles_.end()) {
         values_.call(lookup->second, std::forward<Fn&&>(fn));
       }
+    }
+
+    [[nodiscard]] int32_t size() const
+    {
+      assert(handles_.size() == values_.size());
+      assert(values_.size() <= std::numeric_limits<int32_t>::max());
+      return static_cast<int32_t>(values_.size());
     }
 
     auto begin() -> typename decltype(values_)::iterator
