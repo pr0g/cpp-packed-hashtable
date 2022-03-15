@@ -1,6 +1,15 @@
 # todo
 
-- test for insert
+- ~~test for insert~~
+- implement emplace
+- implement clear
+- implement erase
+- add const call and call_return
+- test for find
+- test for iterate
+- test for enumerate
+- add contains
+- add capacity
 
 ## notes
 
