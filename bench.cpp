@@ -14,7 +14,7 @@ struct object_t
 static void iterate_lookup(benchmark::State& state)
 {
   thh::dense_map_t<std::string, object_t> look_up_table;
-  look_up_table.reserve(state.range(0));
+  look_up_table.reserve(static_cast<int32_t>(state.range(0)));
   for (int i = 0; i < state.range(0); ++i) {
     look_up_table.insert({std::string("name") + std::to_string(i), object_t{}});
   }
@@ -52,7 +52,7 @@ BENCHMARK(iterate_map)->RangeMultiplier(2)->Range(32, 8 << 12);
 static void find_lookup(benchmark::State& state)
 {
   thh::dense_map_t<std::string, object_t> look_up_table;
-  look_up_table.reserve(state.range(0));
+  look_up_table.reserve(static_cast<int32_t>(state.range(0)));
   for (int i = 0; i < state.range(); ++i) {
     look_up_table.insert({std::string("name") + std::to_string(i), object_t{}});
   }
