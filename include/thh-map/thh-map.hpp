@@ -8,50 +8,28 @@ namespace thh
   template<typename Key, typename Value>
   class dense_map_t
   {
-    using value_type = std::pair<const Key, Value>;
-
     handle_vector_t<Value> values_;
     std::unordered_map<Key, typed_handle_t<default_tag_t>> handles_;
 
   public:
-    void insert(const value_type& value)
-    {
-      const auto handle = values_.add(value.second);
-      handles_.emplace(value.first, handle);
-    }
+    using value_type = std::pair<const Key, Value>;
+    using iterator = typename decltype(values_)::iterator;
+    using const_iterator = typename decltype(values_)::const_iterator;
 
-    void insert(value_type&& value)
-    {
-      const auto handle = values_.add(std::move(value).second);
-      handles_.emplace(std::move(value).first, handle);
-    }
-
-    void reserve(int32_t capacity)
-    {
-      values_.reserve(capacity);
-      handles_.reserve(capacity);
-    }
-
+    void insert(const value_type& value);
+    void insert(value_type&& value);
+    void reserve(int32_t capacity);
+    [[nodiscard]] int32_t size() const;
+    [[nodiscard]] bool empty() const;
     template<typename Fn>
-    void call(const Key& key, Fn&& fn)
-    {
-      if (auto lookup = handles_.find(key); lookup != handles_.end()) {
-        values_.call(lookup->second, std::forward<Fn&&>(fn));
-      }
-    }
-
-    [[nodiscard]] int32_t size() const
-    {
-      assert(handles_.size() == values_.size());
-      assert(values_.size() <= std::numeric_limits<int32_t>::max());
-      return static_cast<int32_t>(values_.size());
-    }
-
-    auto begin() -> typename decltype(values_)::iterator
-    {
-      return values_.begin();
-    }
-
-    auto end() -> typename decltype(values_)::iterator { return values_.end(); }
+    void call(const Key& key, Fn&& fn);
+    auto begin() -> iterator;
+    auto begin() const -> const_iterator;
+    auto cbegin() const -> const_iterator;
+    auto end() -> iterator;
+    auto end() const -> const_iterator;
+    auto cend() const -> const_iterator;
   };
 } // namespace thh
+
+#include "thh-map.inl"
