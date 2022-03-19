@@ -35,3 +35,10 @@ TEST_CASE("ContainerSizeIncreaseByOneAfterInsert")
   dense_map.insert(std::pair{5, 'a'});
   CHECK(dense_map.size() == 1);
 }
+
+TEST_CASE("ContainerSizeIncreaseByOneAfterTryEmplace")
+{
+  thh::dense_map_t<int, char> dense_map;
+  dense_map.try_emplace(5, 'a');
+  CHECK(dense_map.size() == 1);
+}

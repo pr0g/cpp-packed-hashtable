@@ -15,6 +15,14 @@ namespace thh
   }
 
   template<typename Key, typename Value>
+  template<typename... Args>
+  void dense_map_t<Key, Value>::try_emplace(const Key& key, Args&&... args)
+  {
+    const auto handle = values_.add(std::forward<Args>(args)...);
+    handles_.try_emplace(key, handle);
+  }
+
+  template<typename Key, typename Value>
   void dense_map_t<Key, Value>::reserve(const int32_t capacity)
   {
     assert(capacity > 0);

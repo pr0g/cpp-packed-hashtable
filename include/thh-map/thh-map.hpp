@@ -18,6 +18,8 @@ namespace thh
 
     void insert(const value_type& value);
     void insert(value_type&& value);
+    template<typename... Args>
+    void try_emplace(const Key& key, Args&&... args);
     void reserve(int32_t capacity);
     [[nodiscard]] int32_t size() const;
     [[nodiscard]] bool empty() const;
