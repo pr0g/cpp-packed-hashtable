@@ -80,14 +80,14 @@ int main(int argc, char** argv)
 
   std::cout << '\n';
 
-  const std::string dense_map_name("thh::dense_map_t");
+  const std::string dense_map_name("thh::packed_hashtable_t");
   std::cout << dense_map_name << '\n'
             << underline_fn(dense_map_name.size()) << '\n';
   for (const int size : sizes) {
-    thh::dense_map_t<std::string, object_t> lookup_table;
+    thh::packed_hashtable_t<std::string, object_t> lookup_table;
     lookup_table.reserve(size);
     for (int i = 0; i < size; ++i) {
-      lookup_table.insert(std::pair(std::to_string(i), object_t{}));
+      lookup_table.add(std::pair(std::to_string(i), object_t{}));
     }
     std::cout << std::left << std::setw(10) << g_total << std::right
               << std::setw(2) << '(' << size << ")\n";

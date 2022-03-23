@@ -6,7 +6,7 @@
 namespace thh
 {
   template<typename Key, typename Value>
-  class dense_map_t
+  class packed_hashtable_t
   {
     handle_vector_t<Value> values_;
     std::unordered_map<Key, typed_handle_t<default_tag_t>> handles_;
@@ -16,15 +16,21 @@ namespace thh
     using iterator = typename decltype(values_)::iterator;
     using const_iterator = typename decltype(values_)::const_iterator;
 
-    void insert(const value_type& value);
-    void insert(value_type&& value);
-    template<typename... Args>
-    void try_emplace(const Key& key, Args&&... args);
+    template<typename P>
+    void add(P&& value);
+    void add(value_type&& value);
+
+    // remove
+    // has
+    // capacity
+    // clear
+
     void reserve(int32_t capacity);
     [[nodiscard]] int32_t size() const;
     [[nodiscard]] bool empty() const;
     template<typename Fn>
     void call(const Key& key, Fn&& fn);
+    // other call overloads...
     auto begin() -> iterator;
     auto begin() const -> const_iterator;
     auto cbegin() const -> const_iterator;

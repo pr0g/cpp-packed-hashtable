@@ -11,6 +11,9 @@
 - add contains
 - add capacity
 
+- dense_iterator
+- lookup_iterator
+
 ## notes
 
 - `dense_map_t` stores an additional `28` bytes per element over `unordered_map`

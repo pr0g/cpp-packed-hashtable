@@ -5,40 +5,75 @@
 
 TEST_CASE("CanAllocContainer")
 {
-  thh::dense_map_t<char, char> dense_map;
+  thh::packed_hashtable_t<char, char> packed_hashtable;
   CHECK(true);
 }
 
 TEST_CASE("ContainerSizeZeroAfterInit")
 {
-  thh::dense_map_t<char, char> dense_map;
-  const auto dense_map_size = dense_map.size();
+  thh::packed_hashtable_t<char, char> packed_hashtable;
+  const auto dense_map_size = packed_hashtable.size();
   CHECK(dense_map_size == 0);
 }
 
 TEST_CASE("ContainerEmptyAfterInit")
 {
-  thh::dense_map_t<char, char> dense_map;
-  CHECK(dense_map.empty());
+  thh::packed_hashtable_t<char, char> packed_hashtable;
+  CHECK(packed_hashtable.empty());
 }
 
 TEST_CASE("ContainerNotEmptyAfterInsert")
 {
-  thh::dense_map_t<int, char> dense_map;
-  dense_map.insert(std::pair{5, 'a'});
-  CHECK(!dense_map.empty());
+  thh::packed_hashtable_t<int, char> packed_hashtable;
+  packed_hashtable.add(std::pair{5, 'a'});
+  CHECK(!packed_hashtable.empty());
 }
 
 TEST_CASE("ContainerSizeIncreaseByOneAfterInsert")
 {
-  thh::dense_map_t<int, char> dense_map;
-  dense_map.insert(std::pair{5, 'a'});
-  CHECK(dense_map.size() == 1);
+  thh::packed_hashtable_t<int, char> packed_hashtable;
+  packed_hashtable.add(std::pair{5, 'a'});
+  CHECK(packed_hashtable.size() == 1);
 }
 
-TEST_CASE("ContainerSizeIncreaseByOneAfterTryEmplace")
+// more add tests...
+
+TEST_CASE("InsertingSameKeyTwiceOverwritesElementLvalue")
 {
-  thh::dense_map_t<int, char> dense_map;
-  dense_map.try_emplace(5, 'a');
-  CHECK(dense_map.size() == 1);
+  thh::packed_hashtable_t<int, std::string> packed_hashtable;
+  auto first_key_value_pair = std::pair<const int, std::string>{2, "a"};
+  auto second_key_value_pair = std::pair<const int, std::string>{2, "b"};
+  packed_hashtable.add(first_key_value_pair);
+  packed_hashtable.add(second_key_value_pair);
+  packed_hashtable.call(2, [](const std::string& c) { CHECK(c == "b"); });
+  CHECK(packed_hashtable.size() == 1);
+}
+
+TEST_CASE("InsertingSameKeyTwiceOverwritesElementRvalue")
+{
+  thh::packed_hashtable_t<int, char> packed_hashtable;
+  packed_hashtable.add({2, 'a'});
+  packed_hashtable.add({2, 'b'});
+  packed_hashtable.call(2, [](const char c) { CHECK(c == 'b'); });
+  CHECK(packed_hashtable.size() == 1);
+}
+
+TEST_CASE("dummy")
+{
+  struct object_t
+  {
+    object_t(int i, int j) : i_(i), j_(j) {}
+    object_t(object_t&&) = default;
+    object_t& operator=(object_t&&) = default;
+    int i_;
+    int j_;
+  };
+
+  thh::packed_hashtable_t<char, object_t> packed_hashtable;
+  packed_hashtable.add({'a', object_t{1, 2}});
+
+  packed_hashtable.call('a', [](const object_t& c) {
+    CHECK(c.i_ == 1);
+    CHECK(c.j_ == 2);
+  });
 }
