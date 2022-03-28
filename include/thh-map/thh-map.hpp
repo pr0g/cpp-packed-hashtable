@@ -53,6 +53,12 @@ namespace thh
     auto hend() -> handle_iterator;
     auto hend() const -> const_handle_iterator;
     auto hcend() const -> const_handle_iterator;
+
+  private:
+    template<typename P>
+    std::pair<handle_iterator, bool> add_internal(P&& key_value);
+    template<typename P>
+    std::pair<handle_iterator, bool> add_or_update_internal(P&& key_value);
   };
 } // namespace thh
 

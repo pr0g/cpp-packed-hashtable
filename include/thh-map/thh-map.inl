@@ -3,7 +3,7 @@ namespace thh
   template<typename Key, typename Value>
   template<typename P>
   std::pair<typename packed_hashtable_t<Key, Value>::handle_iterator, bool>
-  packed_hashtable_t<Key, Value>::add(P&& key_value)
+  packed_hashtable_t<Key, Value>::add_internal(P&& key_value)
   {
     if (auto lookup = handles_.find(key_value.first);
         lookup != handles_.end()) {
@@ -16,22 +16,9 @@ namespace thh
   }
 
   template<typename Key, typename Value>
-  std::pair<typename packed_hashtable_t<Key, Value>::handle_iterator, bool>
-  packed_hashtable_t<Key, Value>::add(key_value_type&& key_value)
-  {
-    if (auto lookup = handles_.find(key_value.first);
-        lookup != handles_.end()) {
-      return {lookup, false};
-    } else {
-      const auto handle = values_.add(std::move(key_value).second);
-      return handles_.insert({std::move(key_value).first, handle});
-    }
-  }
-
-  template<typename Key, typename Value>
   template<typename P>
   std::pair<typename packed_hashtable_t<Key, Value>::handle_iterator, bool>
-  packed_hashtable_t<Key, Value>::add_or_update(P&& key_value)
+  packed_hashtable_t<Key, Value>::add_or_update_internal(P&& key_value)
   {
     if (auto lookup = handles_.find(key_value.first);
         lookup != handles_.end()) {
@@ -47,19 +34,33 @@ namespace thh
   }
 
   template<typename Key, typename Value>
+  template<typename P>
+  std::pair<typename packed_hashtable_t<Key, Value>::handle_iterator, bool>
+  packed_hashtable_t<Key, Value>::add(P&& key_value)
+  {
+    return add_internal(std::forward<P>(key_value));
+  }
+
+  template<typename Key, typename Value>
+  std::pair<typename packed_hashtable_t<Key, Value>::handle_iterator, bool>
+  packed_hashtable_t<Key, Value>::add(key_value_type&& key_value)
+  {
+    return add_internal(std::move(key_value));
+  }
+
+  template<typename Key, typename Value>
+  template<typename P>
+  std::pair<typename packed_hashtable_t<Key, Value>::handle_iterator, bool>
+  packed_hashtable_t<Key, Value>::add_or_update(P&& key_value)
+  {
+    return add_or_update_internal(std::forward<P>(key_value));
+  }
+
+  template<typename Key, typename Value>
   std::pair<typename packed_hashtable_t<Key, Value>::handle_iterator, bool>
   packed_hashtable_t<Key, Value>::add_or_update(key_value_type&& key_value)
   {
-    if (auto lookup = handles_.find(key_value.first);
-        lookup != handles_.end()) {
-      values_.call(lookup->second, [&key_value](Value& value) {
-        value = std::move(key_value).second;
-      });
-      return {lookup, false};
-    } else {
-      const auto handle = values_.add(std::move(key_value).second);
-      return handles_.insert({std::move(key_value).first, handle});
-    }
+    return add_or_update_internal(std::move(key_value));
   }
 
   template<typename Key, typename Value>
