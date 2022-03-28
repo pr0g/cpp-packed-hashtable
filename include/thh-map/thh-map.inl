@@ -2,27 +2,64 @@ namespace thh
 {
   template<typename Key, typename Value>
   template<typename P>
-  void packed_hashtable_t<Key, Value>::add(P&& key_value)
+  std::pair<typename packed_hashtable_t<Key, Value>::handle_iterator, bool>
+  packed_hashtable_t<Key, Value>::add(P&& key_value)
   {
     if (auto lookup = handles_.find(key_value.first);
         lookup != handles_.end()) {
-      [[maybe_unused]] const bool removed = values_.remove(lookup->second);
-      assert(removed);
+      return {lookup, false};
+    } else {
+      const auto handle = values_.add(std::forward<Value>(key_value.second));
+      return handles_.insert(
+        {std::forward<const Key>(key_value.first), handle});
     }
-    const auto handle = values_.add(std::forward<Value>(key_value.second));
-    handles_.insert({std::forward<const Key>(key_value.first), handle});
   }
 
   template<typename Key, typename Value>
-  void packed_hashtable_t<Key, Value>::add(key_value_type&& key_value)
+  std::pair<typename packed_hashtable_t<Key, Value>::handle_iterator, bool>
+  packed_hashtable_t<Key, Value>::add(key_value_type&& key_value)
   {
     if (auto lookup = handles_.find(key_value.first);
         lookup != handles_.end()) {
-      [[maybe_unused]] const bool removed = values_.remove(lookup->second);
-      assert(removed);
+      return {lookup, false};
+    } else {
+      const auto handle = values_.add(std::move(key_value).second);
+      return handles_.insert({std::move(key_value).first, handle});
     }
-    const auto handle = values_.add(std::move(key_value).second);
-    handles_.insert({std::move(key_value).first, handle});
+  }
+
+  template<typename Key, typename Value>
+  template<typename P>
+  std::pair<typename packed_hashtable_t<Key, Value>::handle_iterator, bool>
+  packed_hashtable_t<Key, Value>::add_or_update(P&& key_value)
+  {
+    if (auto lookup = handles_.find(key_value.first);
+        lookup != handles_.end()) {
+      values_.call(lookup->second, [&key_value](Value& value) {
+        value = std::forward<Value>(key_value.second);
+      });
+      return {lookup, false};
+    } else {
+      const auto handle = values_.add(std::forward<Value>(key_value.second));
+      return handles_.insert(
+        {std::forward<const Key>(key_value.first), handle});
+    }
+  }
+
+  template<typename Key, typename Value>
+  std::pair<typename packed_hashtable_t<Key, Value>::handle_iterator, bool>
+  packed_hashtable_t<Key, Value>::add_or_update(key_value_type&& key_value)
+  {
+    if (auto lookup = handles_.find(key_value.first);
+        lookup != handles_.end()) {
+      values_.call(lookup->second, [&key_value](Value& value) {
+        value = std::move(key_value).second;
+      });
+      return {lookup, false};
+    } else {
+      const auto handle = values_.add(std::move(key_value).second);
+      return handles_.insert({std::move(key_value).first, handle});
+    }
   }
 
   template<typename Key, typename Value>
@@ -40,6 +77,14 @@ namespace thh
     if (auto lookup = handles_.find(key); lookup != handles_.end()) {
       values_.call(lookup->second, std::forward<Fn&&>(fn));
     }
+  }
+
+  template<typename Key, typename Value>
+  template<typename Fn>
+  void packed_hashtable_t<Key, Value>::call(
+    const packed_hashtable_handle_t handle, Fn&& fn)
+  {
+    values_.call(handle, std::forward<Fn&&>(fn));
   }
 
   template<typename Key, typename Value>

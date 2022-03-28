@@ -5,11 +5,13 @@
 
 namespace thh
 {
+  using packed_hashtable_handle_t = typed_handle_t<struct packed_hash_tag_t>;
+
   template<typename Key, typename Value>
   class packed_hashtable_t
   {
-    handle_vector_t<Value> values_;
-    std::unordered_map<Key, typed_handle_t<default_tag_t>> handles_;
+    handle_vector_t<Value, struct packed_hash_tag_t> values_;
+    std::unordered_map<Key, packed_hashtable_handle_t> handles_;
 
   public:
     using key_value_type = std::pair<const Key, Value>;
@@ -19,10 +21,12 @@ namespace thh
     using const_handle_iterator = typename decltype(handles_)::const_iterator;
 
     template<typename P>
-    void add(P&& value);
-    void add(key_value_type&& value);
+    std::pair<handle_iterator, bool> add(P&& key_value);
+    std::pair<handle_iterator, bool> add(key_value_type&& key_value);
+    template<typename P>
+    std::pair<handle_iterator, bool> add_or_update(P&& key_value);
+    std::pair<handle_iterator, bool> add_or_update(key_value_type&& key_value);
 
-    // add_or_update
     // remove
     // has
     // capacity
@@ -33,6 +37,8 @@ namespace thh
     [[nodiscard]] bool empty() const;
     template<typename Fn>
     void call(const Key& key, Fn&& fn);
+    template<typename Fn>
+    void call(packed_hashtable_handle_t handle, Fn&& fn);
     // other call overloads...
     auto vbegin() -> value_iterator;
     auto vbegin() const -> const_value_iterator;
