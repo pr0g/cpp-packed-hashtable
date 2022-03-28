@@ -2,25 +2,27 @@ namespace thh
 {
   template<typename Key, typename Value>
   template<typename P>
-  void packed_hashtable_t<Key, Value>::add(P&& value)
+  void packed_hashtable_t<Key, Value>::add(P&& key_value)
   {
-    if (auto lookup = handles_.find(value.first); lookup != handles_.end()) {
+    if (auto lookup = handles_.find(key_value.first);
+        lookup != handles_.end()) {
       [[maybe_unused]] const bool removed = values_.remove(lookup->second);
       assert(removed);
     }
-    const auto handle = values_.add(std::forward<Value>(value.second));
-    handles_.insert({std::forward<const Key>(value.first), handle});
+    const auto handle = values_.add(std::forward<Value>(key_value.second));
+    handles_.insert({std::forward<const Key>(key_value.first), handle});
   }
 
   template<typename Key, typename Value>
-  void packed_hashtable_t<Key, Value>::add(value_type&& value)
+  void packed_hashtable_t<Key, Value>::add(key_value_type&& key_value)
   {
-    if (auto lookup = handles_.find(value.first); lookup != handles_.end()) {
+    if (auto lookup = handles_.find(key_value.first);
+        lookup != handles_.end()) {
       [[maybe_unused]] const bool removed = values_.remove(lookup->second);
       assert(removed);
     }
-    const auto handle = values_.add(std::move(value).second);
-    handles_.insert({std::move(value).first, handle});
+    const auto handle = values_.add(std::move(key_value).second);
+    handles_.insert({std::move(key_value).first, handle});
   }
 
   template<typename Key, typename Value>
@@ -56,38 +58,74 @@ namespace thh
   }
 
   template<typename Key, typename Value>
-  auto packed_hashtable_t<Key, Value>::begin() -> iterator
+  auto packed_hashtable_t<Key, Value>::vbegin() -> value_iterator
   {
     return values_.begin();
   }
 
   template<typename Key, typename Value>
-  auto packed_hashtable_t<Key, Value>::begin() const -> const_iterator
+  auto packed_hashtable_t<Key, Value>::vbegin() const -> const_value_iterator
   {
     return values_.begin();
   }
 
   template<typename Key, typename Value>
-  auto packed_hashtable_t<Key, Value>::cbegin() const -> const_iterator
+  auto packed_hashtable_t<Key, Value>::vcbegin() const -> const_value_iterator
   {
-    return values_.begin();
+    return values_.cbegin();
   }
 
   template<typename Key, typename Value>
-  auto packed_hashtable_t<Key, Value>::end() -> iterator
+  auto packed_hashtable_t<Key, Value>::vend() -> value_iterator
   {
     return values_.end();
   }
 
   template<typename Key, typename Value>
-  auto packed_hashtable_t<Key, Value>::end() const -> const_iterator
+  auto packed_hashtable_t<Key, Value>::vend() const -> const_value_iterator
   {
     return values_.end();
   }
 
   template<typename Key, typename Value>
-  auto packed_hashtable_t<Key, Value>::cend() const -> const_iterator
+  auto packed_hashtable_t<Key, Value>::vcend() const -> const_value_iterator
   {
-    return values_.end();
+    return values_.cend();
+  }
+
+  template<typename Key, typename Value>
+  auto packed_hashtable_t<Key, Value>::hbegin() -> handle_iterator
+  {
+    return handles_.begin();
+  }
+
+  template<typename Key, typename Value>
+  auto packed_hashtable_t<Key, Value>::hbegin() const -> const_handle_iterator
+  {
+    return handles_.begin();
+  }
+
+  template<typename Key, typename Value>
+  auto packed_hashtable_t<Key, Value>::hcbegin() const -> const_handle_iterator
+  {
+    return handles_.cbegin();
+  }
+
+  template<typename Key, typename Value>
+  auto packed_hashtable_t<Key, Value>::hend() -> handle_iterator
+  {
+    return handles_.end();
+  }
+
+  template<typename Key, typename Value>
+  auto packed_hashtable_t<Key, Value>::hend() const -> const_handle_iterator
+  {
+    return handles_.end();
+  }
+
+  template<typename Key, typename Value>
+  auto packed_hashtable_t<Key, Value>::hcend() const -> const_handle_iterator
+  {
+    return handles_.cend();
   }
 } // namespace thh

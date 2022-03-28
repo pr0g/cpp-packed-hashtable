@@ -12,14 +12,17 @@ namespace thh
     std::unordered_map<Key, typed_handle_t<default_tag_t>> handles_;
 
   public:
-    using value_type = std::pair<const Key, Value>;
-    using iterator = typename decltype(values_)::iterator;
-    using const_iterator = typename decltype(values_)::const_iterator;
+    using key_value_type = std::pair<const Key, Value>;
+    using value_iterator = typename decltype(values_)::iterator;
+    using const_value_iterator = typename decltype(values_)::const_iterator;
+    using handle_iterator = typename decltype(handles_)::iterator;
+    using const_handle_iterator = typename decltype(handles_)::const_iterator;
 
     template<typename P>
     void add(P&& value);
-    void add(value_type&& value);
+    void add(key_value_type&& value);
 
+    // add_or_update
     // remove
     // has
     // capacity
@@ -31,12 +34,19 @@ namespace thh
     template<typename Fn>
     void call(const Key& key, Fn&& fn);
     // other call overloads...
-    auto begin() -> iterator;
-    auto begin() const -> const_iterator;
-    auto cbegin() const -> const_iterator;
-    auto end() -> iterator;
-    auto end() const -> const_iterator;
-    auto cend() const -> const_iterator;
+    auto vbegin() -> value_iterator;
+    auto vbegin() const -> const_value_iterator;
+    auto vcbegin() const -> const_value_iterator;
+    auto vend() -> value_iterator;
+    auto vend() const -> const_value_iterator;
+    auto vcend() const -> const_value_iterator;
+
+    auto hbegin() -> handle_iterator;
+    auto hbegin() const -> const_handle_iterator;
+    auto hcbegin() const -> const_handle_iterator;
+    auto hend() -> handle_iterator;
+    auto hend() const -> const_handle_iterator;
+    auto hcend() const -> const_handle_iterator;
   };
 } // namespace thh
 

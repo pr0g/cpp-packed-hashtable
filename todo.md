@@ -11,6 +11,15 @@
 - add contains
 - add capacity
 
+- ebegin()
+- cebegin()
+- hbegin
+- chbegin
+- hend()
+
+- value_iterator
+- handle_iterator
+
 - dense_iterator
 - lookup_iterator
 

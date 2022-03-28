@@ -77,3 +77,26 @@ TEST_CASE("dummy")
     CHECK(c.j_ == 2);
   });
 }
+
+TEST_CASE("VisitValuesViaHandleIteratorsAndKeyLookup")
+{
+  thh::packed_hashtable_t<int, std::string> packed_hashtable;
+  packed_hashtable.add({123, "test"});
+  packed_hashtable.add({456, "the"});
+  packed_hashtable.add({987, "iteration"});
+
+  std::string expected = "testtheiteration";
+  std::sort(expected.begin(), expected.end());
+
+  std::string outcome;
+  std::for_each(
+    packed_hashtable.hbegin(), packed_hashtable.hend(),
+    [&packed_hashtable, &outcome](const auto& key_handle) {
+      packed_hashtable.call(
+        key_handle.first,
+        [&outcome](const std::string& value) { outcome += value; });
+    });
+
+  std::sort(outcome.begin(), outcome.end());
+  CHECK(outcome == expected);
+}
