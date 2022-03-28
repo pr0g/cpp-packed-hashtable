@@ -64,6 +64,25 @@ namespace thh
   }
 
   template<typename Key, typename Value>
+  typename packed_hashtable_t<Key, Value>::handle_iterator packed_hashtable_t<
+    Key, Value>::remove(const Key& key)
+  {
+    if (auto lookup = handles_.find(key); lookup != handles_.end()) {
+      [[maybe_unused]] const auto removed = values_.remove(lookup->second);
+      assert(removed);
+      return handles_.erase(lookup);
+    }
+    return handles_.end();
+  }
+
+  template<typename Key, typename Value>
+  typename packed_hashtable_t<Key, Value>::handle_iterator packed_hashtable_t<
+    Key, Value>::remove(handle_iterator position)
+  {
+    return remove(position->first);
+  }
+
+  template<typename Key, typename Value>
   void packed_hashtable_t<Key, Value>::reserve(const int32_t capacity)
   {
     assert(capacity > 0);

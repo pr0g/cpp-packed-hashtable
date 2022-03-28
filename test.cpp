@@ -204,3 +204,59 @@ TEST_CASE("Visit values via handle iterators and handle lookup")
   std::sort(outcome.begin(), outcome.end());
   CHECK(outcome == expected);
 }
+
+TEST_CASE("Value can be removed using key")
+{
+  thh::packed_hashtable_t<int, std::string> packed_hashtable;
+
+  packed_hashtable.add({5, "hello"});
+  packed_hashtable.add({8, "world"});
+
+  packed_hashtable.remove(8);
+
+  CHECK(packed_hashtable.size() == 1);
+}
+
+TEST_CASE("Iterator to next handle is returned after remove")
+{
+  thh::packed_hashtable_t<int, std::string> packed_hashtable;
+
+  packed_hashtable.add({5, "hello"});
+  packed_hashtable.add({8, "world"});
+
+  const auto handle_it = packed_hashtable.remove(8);
+
+  CHECK(handle_it->first == 5);
+}
+
+TEST_CASE("Values can be removed via iteration")
+{
+  thh::packed_hashtable_t<int, std::string> packed_hashtable;
+
+  packed_hashtable.add({1, "one"});
+  packed_hashtable.add({2, "two"});
+  packed_hashtable.add({3, "three"});
+  packed_hashtable.add({4, "four"});
+  packed_hashtable.add({5, "five"});
+  packed_hashtable.add({6, "six"});
+
+  // erase all odd numbers from table
+  for (auto it = packed_hashtable.hbegin(); it != packed_hashtable.hend();) {
+    if (it->first % 2 != 0) {
+      it = packed_hashtable.remove(it);
+    } else {
+      ++it;
+    }
+  }
+
+  std::string outcome;
+  std::for_each(
+    packed_hashtable.vbegin(), packed_hashtable.vend(),
+    [&outcome](const auto& value) { outcome.append(value); });
+
+  // sort characters to avoid any order dependence issues
+  std::sort(outcome.begin(), outcome.end());
+
+  CHECK(outcome == "fioorstuwx");
+  CHECK(packed_hashtable.size() == 3);
+}

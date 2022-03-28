@@ -27,7 +27,9 @@ namespace thh
     std::pair<handle_iterator, bool> add_or_update(P&& key_value);
     std::pair<handle_iterator, bool> add_or_update(key_value_type&& key_value);
 
-    // remove
+    handle_iterator remove(const Key& key);
+    handle_iterator remove(handle_iterator position);
+
     // has
     // capacity
     // clear
