@@ -30,7 +30,8 @@ namespace thh
     handle_iterator remove(const Key& key);
     handle_iterator remove(handle_iterator position);
 
-    // has
+    bool has(const Key& key) const;
+
     // capacity
     // clear
 

@@ -260,3 +260,29 @@ TEST_CASE("Values can be removed via iteration")
   CHECK(outcome == "fioorstuwx");
   CHECK(packed_hashtable.size() == 3);
 }
+
+TEST_CASE("Container has key after add")
+{
+  thh::packed_hashtable_t<int, std::string> packed_hashtable;
+
+  packed_hashtable.add({1, "one"});
+  packed_hashtable.add({2, "two"});
+  packed_hashtable.add({3, "three"});
+
+  CHECK(packed_hashtable.has(1));
+  CHECK(packed_hashtable.has(2));
+  CHECK(packed_hashtable.has(3));
+}
+
+TEST_CASE("Container does not have key that wasn't added")
+{
+  thh::packed_hashtable_t<int, std::string> packed_hashtable;
+
+  packed_hashtable.add({1, "one"});
+  packed_hashtable.add({2, "two"});
+  packed_hashtable.add({3, "three"});
+
+  CHECK(!packed_hashtable.has(4));
+  CHECK(!packed_hashtable.has(5));
+  CHECK(!packed_hashtable.has(6));
+}
