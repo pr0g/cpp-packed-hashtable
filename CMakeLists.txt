@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(thh_map LANGUAGES CXX)
+project(thh-packed-hashtable LANGUAGES CXX)
 
 include(FetchContent)
 
