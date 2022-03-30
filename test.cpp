@@ -44,6 +44,23 @@ TEST_CASE("Elements can be reserved")
   CHECK(packed_hashtable.capacity() == 10);
 }
 
+TEST_CASE("Container can be cleared")
+{
+  thh::packed_hashtable_t<int, std::string> packed_hashtable;
+  packed_hashtable.add({1, "one"});
+  packed_hashtable.add({2, "two"});
+  packed_hashtable.add({3, "three"});
+
+  packed_hashtable.clear();
+
+  CHECK(packed_hashtable.size() == 0);
+  CHECK(packed_hashtable.empty());
+
+  for (const auto& key : {1, 2, 3}) {
+    CHECK(!packed_hashtable.has(key));
+  }
+}
+
 TEST_CASE("Adding same key with add or update returns iterator that prevented "
           "addition (l-value)")
 {

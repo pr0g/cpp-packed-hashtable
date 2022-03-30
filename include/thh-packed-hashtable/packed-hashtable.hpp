@@ -30,7 +30,7 @@ namespace thh
     handle_iterator remove(handle_iterator position);
     bool has(const Key& key) const;
     int32_t capacity() const;
-    // clear
+    void clear();
     void reserve(int32_t capacity);
     [[nodiscard]] int32_t size() const;
     [[nodiscard]] bool empty() const;

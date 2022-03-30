@@ -95,6 +95,13 @@ namespace thh
   }
 
   template<typename Key, typename Value>
+  void packed_hashtable_t<Key, Value>::clear()
+  {
+    values_.clear();
+    handles_.clear();
+  }
+
+  template<typename Key, typename Value>
   void packed_hashtable_t<Key, Value>::reserve(const int32_t capacity)
   {
     assert(capacity > 0);
