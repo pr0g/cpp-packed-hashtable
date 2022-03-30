@@ -36,6 +36,14 @@ TEST_CASE("Container size increase by one after add")
   CHECK(packed_hashtable.size() == 1);
 }
 
+TEST_CASE("Elements can be reserved")
+{
+  thh::packed_hashtable_t<int, std::string> packed_hashtable;
+  packed_hashtable.reserve(10);
+  CHECK(packed_hashtable.size() == 0);
+  CHECK(packed_hashtable.capacity() == 10);
+}
+
 TEST_CASE("Adding same key with add or update returns iterator that prevented "
           "addition (l-value)")
 {

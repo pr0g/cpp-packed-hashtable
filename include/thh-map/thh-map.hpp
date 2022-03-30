@@ -26,15 +26,11 @@ namespace thh
     template<typename P>
     std::pair<handle_iterator, bool> add_or_update(P&& key_value);
     std::pair<handle_iterator, bool> add_or_update(key_value_type&& key_value);
-
     handle_iterator remove(const Key& key);
     handle_iterator remove(handle_iterator position);
-
     bool has(const Key& key) const;
-
-    // capacity
+    int32_t capacity() const;
     // clear
-
     void reserve(int32_t capacity);
     [[nodiscard]] int32_t size() const;
     [[nodiscard]] bool empty() const;
@@ -43,6 +39,7 @@ namespace thh
     template<typename Fn>
     void call(packed_hashtable_handle_t handle, Fn&& fn);
     // other call overloads...
+
     auto vbegin() -> value_iterator;
     auto vbegin() const -> const_value_iterator;
     auto vcbegin() const -> const_value_iterator;

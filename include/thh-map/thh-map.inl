@@ -89,6 +89,12 @@ namespace thh
   }
 
   template<typename Key, typename Value>
+  int32_t packed_hashtable_t<Key, Value>::capacity() const
+  {
+    return values_.capacity();
+  }
+
+  template<typename Key, typename Value>
   void packed_hashtable_t<Key, Value>::reserve(const int32_t capacity)
   {
     assert(capacity > 0);
