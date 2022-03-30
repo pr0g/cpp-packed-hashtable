@@ -62,4 +62,4 @@ namespace thh
   };
 } // namespace thh
 
-#include "thh-map.inl"
+#include "packed-hashtable.inl"

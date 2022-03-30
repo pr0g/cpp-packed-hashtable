@@ -1,4 +1,4 @@
-#include <thh-map/thh-map.hpp>
+#include <thh-map/packed-hashtable.hpp>
 
 #include <benchmark/benchmark.h>
 
