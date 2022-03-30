@@ -4,17 +4,17 @@ project(thh-packed-hashtable LANGUAGES CXX)
 include(FetchContent)
 
 FetchContent_Declare(
-  thh_handles
+  thh-handle-vector
   GIT_REPOSITORY https://github.com/pr0g/cpp-handle-container.git
-  GIT_TAG 91874a5e22e1cd7ddfbd5cb01a1aa11d8c433e96)
-FetchContent_MakeAvailable(thh_handles)
+  GIT_TAG 34eb683776d6a7d6f63a6154efbc360eb661c16a)
+FetchContent_MakeAvailable(thh-handle-vector)
 
 add_library(${PROJECT_NAME} INTERFACE)
 target_include_directories(
   ${PROJECT_NAME}
   INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
-target_link_libraries(${PROJECT_NAME} INTERFACE thh_handles)
+target_link_libraries(${PROJECT_NAME} INTERFACE thh-handle-vector)
 
 option(THH_MAP_ENABLE_MEMORY "Enable memory profiling" OFF)
 option(THH_MAP_ENABLE_TEST "Enable testing" OFF)

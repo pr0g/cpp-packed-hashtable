@@ -1,6 +1,6 @@
 #pragma once
 
-#include <thh_handles/thh_handles.hpp>
+#include <thh-handle-vector/handle-vector.hpp>
 #include <unordered_map>
 
 namespace thh
