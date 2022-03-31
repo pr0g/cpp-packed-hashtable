@@ -16,17 +16,17 @@ target_include_directories(
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 target_link_libraries(${PROJECT_NAME} INTERFACE thh-handle-vector)
 
-option(THH_MAP_ENABLE_MEMORY "Enable memory profiling" OFF)
-option(THH_MAP_ENABLE_TEST "Enable testing" OFF)
-option(THH_MAP_ENABLE_BENCH "Enable benchmarking" OFF)
+option(THH_PACKED_HASHTABLE_ENABLE_MEMORY "Enable memory profiling" OFF)
+option(THH_PACKED_HASHTABLE_ENABLE_TEST "Enable testing" OFF)
+option(THH_PACKED_HASHTABLE_ENABLE_BENCH "Enable benchmarking" OFF)
 
-if(THH_MAP_ENABLE_MEMORY)
+if(THH_PACKED_HASHTABLE_ENABLE_MEMORY)
   add_executable(${PROJECT_NAME}-memory)
   target_sources(${PROJECT_NAME}-memory PRIVATE memory.cpp)
   target_link_libraries(${PROJECT_NAME}-memory PRIVATE ${PROJECT_NAME})
 endif()
 
-if(THH_MAP_ENABLE_TEST)
+if(THH_PACKED_HASHTABLE_ENABLE_TEST)
   FetchContent_Declare(
     doctest
     GIT_REPOSITORY https://github.com/onqtam/doctest.git
@@ -51,7 +51,7 @@ if(THH_MAP_ENABLE_TEST)
             -pedantic>)
 endif()
 
-if(THH_MAP_ENABLE_BENCH)
+if(THH_PACKED_HASHTABLE_ENABLE_BENCH)
   set(BENCHMARK_ENABLE_TESTING OFF)
   FetchContent_Declare(benchmark
                        GIT_REPOSITORY https://github.com/google/benchmark.git)
