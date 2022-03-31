@@ -142,37 +142,37 @@ namespace thh
   }
 
   template<typename Key, typename Value>
-  auto packed_hashtable_t<Key, Value>::begin() -> value_iterator
+  auto packed_hashtable_t<Key, Value>::vbegin() -> value_iterator
   {
     return values_.begin();
   }
 
   template<typename Key, typename Value>
-  auto packed_hashtable_t<Key, Value>::begin() const -> const_value_iterator
+  auto packed_hashtable_t<Key, Value>::vbegin() const -> const_value_iterator
   {
     return values_.begin();
   }
 
   template<typename Key, typename Value>
-  auto packed_hashtable_t<Key, Value>::cbegin() const -> const_value_iterator
+  auto packed_hashtable_t<Key, Value>::vcbegin() const -> const_value_iterator
   {
     return values_.cbegin();
   }
 
   template<typename Key, typename Value>
-  auto packed_hashtable_t<Key, Value>::end() -> value_iterator
+  auto packed_hashtable_t<Key, Value>::vend() -> value_iterator
   {
     return values_.end();
   }
 
   template<typename Key, typename Value>
-  auto packed_hashtable_t<Key, Value>::end() const -> const_value_iterator
+  auto packed_hashtable_t<Key, Value>::vend() const -> const_value_iterator
   {
     return values_.end();
   }
 
   template<typename Key, typename Value>
-  auto packed_hashtable_t<Key, Value>::cend() const -> const_value_iterator
+  auto packed_hashtable_t<Key, Value>::vcend() const -> const_value_iterator
   {
     return values_.cend();
   }

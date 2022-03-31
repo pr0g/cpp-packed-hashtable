@@ -276,7 +276,7 @@ TEST_CASE("Values can be removed via iteration")
 
   std::string outcome;
   std::for_each(
-    packed_hashtable.begin(), packed_hashtable.end(),
+    packed_hashtable.vbegin(), packed_hashtable.vend(),
     [&outcome](const auto& value) { outcome.append(value); });
 
   // sort characters to avoid any order dependence issues
@@ -310,4 +310,26 @@ TEST_CASE("Container does not have key that wasn't added")
   CHECK(!packed_hashtable.has(4));
   CHECK(!packed_hashtable.has(5));
   CHECK(!packed_hashtable.has(6));
+}
+
+TEST_CASE("looping")
+{
+  thh::packed_hashtable_t<int, std::string> packed_hashtable;
+  packed_hashtable.add({1, "one"});
+  packed_hashtable.add({2, "two"});
+  packed_hashtable.add({3, "three"});
+
+  for (auto& h : packed_hashtable.handle_iteration()) {
+    MESSAGE(h.first);
+    MESSAGE(h.second.gen_, h.second.id_);
+  }
+
+  for (const auto& v : std::as_const(packed_hashtable).value_iteration()) {
+    MESSAGE(v);
+  }
+
+  for (auto& v : packed_hashtable.value_iteration()) {
+    v += std::string("-again");
+    MESSAGE(v);
+  }
 }

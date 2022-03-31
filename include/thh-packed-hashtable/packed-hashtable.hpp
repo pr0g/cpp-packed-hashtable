@@ -40,12 +40,12 @@ namespace thh
     void call(packed_hashtable_handle_t handle, Fn&& fn);
     // other call overloads...
 
-    auto begin() -> value_iterator;
-    auto begin() const -> const_value_iterator;
-    auto cbegin() const -> const_value_iterator;
-    auto end() -> value_iterator;
-    auto end() const -> const_value_iterator;
-    auto cend() const -> const_value_iterator;
+    auto vbegin() -> value_iterator;
+    auto vbegin() const -> const_value_iterator;
+    auto vcbegin() const -> const_value_iterator;
+    auto vend() -> value_iterator;
+    auto vend() const -> const_value_iterator;
+    auto vcend() const -> const_value_iterator;
 
     auto hbegin() -> handle_iterator;
     auto hbegin() const -> const_handle_iterator;
@@ -53,6 +53,75 @@ namespace thh
     auto hend() -> handle_iterator;
     auto hend() const -> const_handle_iterator;
     auto hcend() const -> const_handle_iterator;
+
+    class handle_iterator_wrapper_t
+    {
+      packed_hashtable_t* pht_ = nullptr;
+
+    public:
+      handle_iterator_wrapper_t(packed_hashtable_t& pht) : pht_(&pht) {}
+      auto begin() -> handle_iterator { return pht_->hbegin(); }
+      auto end() -> handle_iterator { return pht_->hend(); }
+    };
+
+    class const_handle_iterator_wrapper_t
+    {
+      const packed_hashtable_t* pht_ = nullptr;
+
+    public:
+      const_handle_iterator_wrapper_t(const packed_hashtable_t& pht)
+        : pht_(&pht)
+      {
+      }
+      auto begin() const -> const_handle_iterator { return pht_->hbegin(); }
+      auto cbegin() const -> const_handle_iterator { return pht_->hcbegin(); }
+      auto end() const -> const_handle_iterator { return pht_->hend(); }
+      auto cend() const -> const_handle_iterator { return pht_->hcend(); }
+    };
+
+    class value_iterator_wrapper_t
+    {
+      packed_hashtable_t* pht_ = nullptr;
+
+    public:
+      value_iterator_wrapper_t(packed_hashtable_t& pht) : pht_(&pht) {}
+      auto begin() -> value_iterator { return pht_->vbegin(); }
+      auto end() -> value_iterator { return pht_->vend(); }
+    };
+
+    class const_value_iterator_wrapper_t
+    {
+      const packed_hashtable_t* pht_ = nullptr;
+
+    public:
+      const_value_iterator_wrapper_t(const packed_hashtable_t& pht) : pht_(&pht)
+      {
+      }
+      auto begin() const -> const_value_iterator { return pht_->vbegin(); }
+      auto cbegin() const -> const_value_iterator { return pht_->vcbegin(); }
+      auto end() const -> const_value_iterator { return pht_->vend(); }
+      auto cend() const -> const_value_iterator { return pht_->vcend(); }
+    };
+
+    auto handle_iteration() -> handle_iterator_wrapper_t
+    {
+      return handle_iterator_wrapper_t(*this);
+    }
+
+    auto handle_iteration() const -> const_handle_iterator_wrapper_t
+    {
+      return const_handle_iterator_wrapper_t(*this);
+    }
+
+    auto value_iteration() -> value_iterator_wrapper_t
+    {
+      return value_iterator_wrapper_t(*this);
+    }
+
+    auto value_iteration() const -> const_value_iterator_wrapper_t
+    {
+      return const_value_iterator_wrapper_t(*this);
+    }
 
   private:
     template<typename P>
