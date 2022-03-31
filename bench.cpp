@@ -22,7 +22,7 @@ static void iterate_lookup(benchmark::State& state)
   for ([[maybe_unused]] auto _ : state) {
     char data_element = 0;
     std::for_each(
-      packed_hashtable.vbegin(), packed_hashtable.vend(),
+      packed_hashtable.begin(), packed_hashtable.end(),
       [&data_element](auto& value) { data_element = value.data_[0]; });
     benchmark::DoNotOptimize(data_element);
   }

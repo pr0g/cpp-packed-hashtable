@@ -40,12 +40,12 @@ namespace thh
     void call(packed_hashtable_handle_t handle, Fn&& fn);
     // other call overloads...
 
-    auto vbegin() -> value_iterator;
-    auto vbegin() const -> const_value_iterator;
-    auto vcbegin() const -> const_value_iterator;
-    auto vend() -> value_iterator;
-    auto vend() const -> const_value_iterator;
-    auto vcend() const -> const_value_iterator;
+    auto begin() -> value_iterator;
+    auto begin() const -> const_value_iterator;
+    auto cbegin() const -> const_value_iterator;
+    auto end() -> value_iterator;
+    auto end() const -> const_value_iterator;
+    auto cend() const -> const_value_iterator;
 
     auto hbegin() -> handle_iterator;
     auto hbegin() const -> const_handle_iterator;

@@ -276,7 +276,7 @@ TEST_CASE("Values can be removed via iteration")
 
   std::string outcome;
   std::for_each(
-    packed_hashtable.vbegin(), packed_hashtable.vend(),
+    packed_hashtable.begin(), packed_hashtable.end(),
     [&outcome](const auto& value) { outcome.append(value); });
 
   // sort characters to avoid any order dependence issues
