@@ -127,6 +127,23 @@ namespace thh
   }
 
   template<typename Key, typename Value>
+  template<typename Fn>
+  void packed_hashtable_t<Key, Value>::call(const Key& key, Fn&& fn) const
+  {
+    if (auto lookup = handles_.find(key); lookup != handles_.end()) {
+      values_.call(lookup->second, std::forward<Fn&&>(fn));
+    }
+  }
+
+  template<typename Key, typename Value>
+  template<typename Fn>
+  void packed_hashtable_t<Key, Value>::call(
+    packed_hashtable_handle_t handle, Fn&& fn) const
+  {
+    values_.call(handle, std::forward<Fn&&>(fn));
+  }
+
+  template<typename Key, typename Value>
   int32_t packed_hashtable_t<Key, Value>::size() const
   {
     assert(handles_.size() == values_.size());

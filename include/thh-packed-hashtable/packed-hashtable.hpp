@@ -38,15 +38,16 @@ namespace thh
     void call(const Key& key, Fn&& fn);
     template<typename Fn>
     void call(packed_hashtable_handle_t handle, Fn&& fn);
-    // other call overloads...
-
+    template<typename Fn>
+    void call(const Key& key, Fn&& fn) const;
+    template<typename Fn>
+    void call(packed_hashtable_handle_t handle, Fn&& fn) const;
     auto vbegin() -> value_iterator;
     auto vbegin() const -> const_value_iterator;
     auto vcbegin() const -> const_value_iterator;
     auto vend() -> value_iterator;
     auto vend() const -> const_value_iterator;
     auto vcend() const -> const_value_iterator;
-
     auto hbegin() -> handle_iterator;
     auto hbegin() const -> const_handle_iterator;
     auto hcbegin() const -> const_handle_iterator;

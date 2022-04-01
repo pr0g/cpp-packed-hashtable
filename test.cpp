@@ -230,6 +230,35 @@ TEST_CASE("Visit values via handle iterators and handle lookup")
   CHECK(outcome == expected);
 }
 
+TEST_CASE("Container call overloads are called for const container with key")
+{
+  thh::packed_hashtable_t<char, std::string> packed_hashtable;
+  packed_hashtable.add({'a', std::string{"letter-a"}});
+
+  bool called = false;
+  std::as_const(packed_hashtable).call('a', [&called](const std::string& str) {
+    called = true;
+    CHECK(str == std::string{"letter-a"});
+  });
+
+  CHECK(called);
+}
+
+TEST_CASE("Container call overloads are called for const container with handle")
+{
+  thh::packed_hashtable_t<char, std::string> packed_hashtable;
+  packed_hashtable.add({'a', std::string{"letter-a"}});
+
+  bool called = false;
+  std::as_const(packed_hashtable)
+    .call(packed_hashtable.hbegin()->second, [&called](const std::string& str) {
+      called = true;
+      CHECK(str == std::string{"letter-a"});
+    });
+
+  CHECK(called);
+}
+
 TEST_CASE("Value can be removed using key")
 {
   thh::packed_hashtable_t<int, std::string> packed_hashtable;
@@ -319,17 +348,18 @@ TEST_CASE("looping")
   packed_hashtable.add({2, "two"});
   packed_hashtable.add({3, "three"});
 
-  for (auto& h : packed_hashtable.handle_iteration()) {
-    MESSAGE(h.first);
-    MESSAGE(h.second.gen_, h.second.id_);
+  for ([[maybe_unused]] auto& h : packed_hashtable.handle_iteration()) {
+    // MESSAGE(h.first);
+    // MESSAGE(h.second.gen_, h.second.id_);
   }
 
-  for (const auto& v : std::as_const(packed_hashtable).value_iteration()) {
-    MESSAGE(v);
+  for ([[maybe_unused]] const auto& v :
+       std::as_const(packed_hashtable).value_iteration()) {
+    // MESSAGE(v);
   }
 
-  for (auto& v : packed_hashtable.value_iteration()) {
-    v += std::string("-again");
-    MESSAGE(v);
+  for ([[maybe_unused]] auto& v : packed_hashtable.value_iteration()) {
+    // v += std::string("-again");
+    // MESSAGE(v);
   }
 }
