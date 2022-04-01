@@ -49,6 +49,29 @@ static void iterate_map(benchmark::State& state)
 
 BENCHMARK(iterate_map)->RangeMultiplier(2)->Range(32, 8 << 12);
 
+static void iterate_lookup_handles(benchmark::State& state)
+{
+  thh::packed_hashtable_t<std::string, object_t> packed_hashtable;
+  packed_hashtable.reserve(static_cast<int32_t>(state.range(0)));
+  for (int i = 0; i < state.range(0); ++i) {
+    packed_hashtable.add({std::string("name") + std::to_string(i), object_t{}});
+  }
+
+  for ([[maybe_unused]] auto _ : state) {
+    char data_element = 0;
+    std::for_each(
+      packed_hashtable.hbegin(), packed_hashtable.hend(),
+      [&data_element, &packed_hashtable](const auto& key_handle) {
+        packed_hashtable.call(key_handle.second, [&data_element](auto& value) {
+          data_element = value.data_[0];
+        });
+      });
+    benchmark::DoNotOptimize(data_element);
+  }
+}
+
+BENCHMARK(iterate_lookup_handles)->RangeMultiplier(2)->Range(32, 8 << 12);
+
 static void find_lookup(benchmark::State& state)
 {
   thh::packed_hashtable_t<std::string, object_t> packed_hashtable;
