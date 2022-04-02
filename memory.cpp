@@ -3,6 +3,7 @@
 #include <array>
 #include <iomanip>
 #include <iostream>
+#include <map>
 #include <string>
 
 // debug memory tracking code
@@ -25,8 +26,8 @@ int main(int argc, char** argv)
     char data_[4096];
   };
 
-  const std::array sizes{32,   64,   128,  256,    512,   1024,
-                         2048, 4096, 8192, 16'384, 32'768};
+  const std::array sizes{32,   64,   128,  256,    512,    1024,
+                         2048, 4096, 8192, 16'384, 32'768, 65'536};
 
   auto underline_fn = [](size_t length) { return std::string(length, '-'); };
 
@@ -61,6 +62,20 @@ int main(int argc, char** argv)
 
   std::cout << '\n';
 
+  const std::string map_name("std::map");
+  std::cout << map_name << '\n' << underline_fn(map_name.size()) << '\n';
+  for (const int size : sizes) {
+    std::map<std::string, object_t> map;
+    for (int i = 0; i < size; ++i) {
+      map.insert(std::pair(std::to_string(i), object_t{}));
+    }
+    std::cout << std::left << std::setw(10) << g_total << std::right
+              << std::setw(2) << '(' << size << ")\n";
+    g_total = 0;
+  }
+
+  std::cout << '\n';
+
   // 16 bytes (per internal handles)
   // 4 bytes (per element id)
   // X bytes (per T)
@@ -80,9 +95,9 @@ int main(int argc, char** argv)
 
   std::cout << '\n';
 
-  const std::string dense_map_name("thh::packed_hashtable_t");
-  std::cout << dense_map_name << '\n'
-            << underline_fn(dense_map_name.size()) << '\n';
+  const std::string packed_hashtable_name("thh::packed_hashtable_t");
+  std::cout << packed_hashtable_name << '\n'
+            << underline_fn(packed_hashtable_name.size()) << '\n';
   for (const int size : sizes) {
     thh::packed_hashtable_t<std::string, object_t> lookup_table;
     lookup_table.reserve(size);
