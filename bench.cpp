@@ -70,10 +70,10 @@ static void iterate_lookup_handles(benchmark::State& state)
 
 static void find_lookup(benchmark::State& state)
 {
-  thh::packed_hashtable_t<std::string, object_t> packed_hashtable;
+  thh::packed_hashtable_t<std::string, object_t<32>> packed_hashtable;
   packed_hashtable.reserve(static_cast<int32_t>(state.range(0)));
   for (int i = 0; i < state.range(); ++i) {
-    packed_hashtable.add({std::string("name") + std::to_string(i), object_t{}});
+    packed_hashtable.add({std::string("name") + std::to_string(i), object_t<32>{}});
   }
 
   const auto lookup = std::string("name") + std::to_string(state.range(0) / 2);
@@ -89,10 +89,10 @@ BENCHMARK(find_lookup)->RangeMultiplier(2)->Range(32, 8 << 12);
 
 static void find_map(benchmark::State& state)
 {
-  std::unordered_map<std::string, object_t> map;
+  std::unordered_map<std::string, object_t<32>> map;
   map.reserve(state.range());
   for (int i = 0; i < state.range(); ++i) {
-    map.insert({std::string("name") + std::to_string(i), object_t{}});
+    map.insert({std::string("name") + std::to_string(i), object_t<32>{}});
   }
 
   const auto lookup = std::string("name") + std::to_string(state.range(0) / 2);
