@@ -1,27 +1,16 @@
 # todo
 
 - ~~test for insert~~
-- implement emplace
-- implement clear
-- implement erase
-- add const call and call_return
-- test for find
-- test for iterate
-- test for enumerate
-- add contains
-- add capacity
-
-- ebegin()
-- cebegin()
-- hbegin
-- chbegin
-- hend()
+- ~~implement clear~~
+- ~~implement erase~~
+- ~~add const call and call_return~~
+- ~~test for find~~
+- ~~test for iterate~~
+- ~~add has~~
+- ~~add capacity~~
 
 - value_iterator
 - handle_iterator
-
-- dense_iterator
-- lookup_iterator
 
 ## notes
 
