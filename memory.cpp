@@ -6,7 +6,7 @@
 #include <string>
 
 // debug memory tracking code
-int g_total = 0;
+std::size_t g_total = 0;
 void* operator new(std::size_t n)
 {
   g_total += n;
@@ -71,7 +71,7 @@ int main(int argc, char** argv)
     thh::handle_vector_t<object_t> handle;
     handle.reserve(size);
     for (int i = 0; i < size; ++i) {
-      auto h = handle.add();
+      handle.add();
     }
     std::cout << std::left << std::setw(10) << g_total << std::right
               << std::setw(2) << '(' << size << ")\n";
