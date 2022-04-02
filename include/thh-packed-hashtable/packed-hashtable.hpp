@@ -26,10 +26,12 @@ namespace thh
     template<typename P>
     std::pair<handle_iterator, bool> add_or_update(P&& key_value);
     std::pair<handle_iterator, bool> add_or_update(key_value_type&& key_value);
+    handle_iterator find(const Key& key);
+    const_handle_iterator find(const Key& key) const;
     handle_iterator remove(const Key& key);
     handle_iterator remove(handle_iterator position);
-    bool has(const Key& key) const;
-    int32_t capacity() const;
+    [[nodiscard]] bool has(const Key& key) const;
+    [[nodiscard]] int32_t capacity() const;
     void clear();
     void reserve(int32_t capacity);
     [[nodiscard]] int32_t size() const;
@@ -42,18 +44,26 @@ namespace thh
     void call(const Key& key, Fn&& fn) const;
     template<typename Fn>
     void call(packed_hashtable_handle_t handle, Fn&& fn) const;
-    auto vbegin() -> value_iterator;
-    auto vbegin() const -> const_value_iterator;
-    auto vcbegin() const -> const_value_iterator;
-    auto vend() -> value_iterator;
-    auto vend() const -> const_value_iterator;
-    auto vcend() const -> const_value_iterator;
-    auto hbegin() -> handle_iterator;
-    auto hbegin() const -> const_handle_iterator;
-    auto hcbegin() const -> const_handle_iterator;
-    auto hend() -> handle_iterator;
-    auto hend() const -> const_handle_iterator;
-    auto hcend() const -> const_handle_iterator;
+    template<typename Fn>
+    decltype(auto) call_return(const Key& key, Fn&& fn);
+    template<typename Fn>
+    decltype(auto) call_return(packed_hashtable_handle_t handle, Fn&& fn);
+    template<typename Fn>
+    decltype(auto) call_return(const Key& key, Fn&& fn) const;
+    template<typename Fn>
+    decltype(auto) call_return(packed_hashtable_handle_t handle, Fn&& fn) const;
+    [[nodiscard]] auto vbegin() -> value_iterator;
+    [[nodiscard]] auto vbegin() const -> const_value_iterator;
+    [[nodiscard]] auto vcbegin() const -> const_value_iterator;
+    [[nodiscard]] auto vend() -> value_iterator;
+    [[nodiscard]] auto vend() const -> const_value_iterator;
+    [[nodiscard]] auto vcend() const -> const_value_iterator;
+    [[nodiscard]] auto hbegin() -> handle_iterator;
+    [[nodiscard]] auto hbegin() const -> const_handle_iterator;
+    [[nodiscard]] auto hcbegin() const -> const_handle_iterator;
+    [[nodiscard]] auto hend() -> handle_iterator;
+    [[nodiscard]] auto hend() const -> const_handle_iterator;
+    [[nodiscard]] auto hcend() const -> const_handle_iterator;
 
     class handle_iterator_wrapper_t
     {

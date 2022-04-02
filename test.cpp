@@ -363,3 +363,99 @@ TEST_CASE("looping")
     // MESSAGE(v);
   }
 }
+
+TEST_CASE("Container handle can be found using key")
+{
+  thh::packed_hashtable_t<int, std::string> packed_hashtable;
+  packed_hashtable.add({1, "one"});
+  packed_hashtable.add({2, "two"});
+  packed_hashtable.add({3, "three"});
+
+  const auto key_handle = packed_hashtable.find(3);
+
+  CHECK(key_handle->first == 3);
+
+  const auto expected = packed_hashtable.call_return(
+    key_handle->second, [](const auto& value) { return value; });
+
+  CHECK(expected == "three");
+}
+
+TEST_CASE("Const container handle can be found using key")
+{
+  thh::packed_hashtable_t<int, std::string> packed_hashtable;
+  packed_hashtable.add({1, "one"});
+  packed_hashtable.add({2, "two"});
+  packed_hashtable.add({3, "three"});
+
+  const auto key_handle = std::as_const(packed_hashtable).find(1);
+
+  CHECK(key_handle->first == 1);
+
+  const auto expected =
+    std::as_const(packed_hashtable)
+      .call_return(key_handle->second, [](const auto& value) { return value; });
+
+  CHECK(expected == "one");
+}
+
+TEST_CASE("Container handle not found for non-existent key or handle")
+{
+  thh::packed_hashtable_t<std::string, int> packed_hashtable;
+  packed_hashtable.add({"one", 1});
+  packed_hashtable.add({"two", 2});
+  packed_hashtable.add({"three", 3});
+
+  const auto key_handle = packed_hashtable.find(std::string("four"));
+  CHECK(key_handle == packed_hashtable.hend());
+
+  const auto expected = packed_hashtable.call_return(
+    thh::packed_hashtable_handle_t{}, [](const auto& value) { return value; });
+
+  CHECK(!expected.has_value());
+}
+
+TEST_CASE("Container call return with key produces expected value")
+{
+  thh::packed_hashtable_t<int, std::string> packed_hashtable;
+  packed_hashtable.add({1, "one"});
+  packed_hashtable.add({2, "two"});
+  packed_hashtable.add({3, "three"});
+
+  auto two_expected = packed_hashtable.call_return(2, [](std::string& value) {
+    value += "four";
+    return value;
+  });
+
+  auto three_expected =
+    std::as_const(packed_hashtable)
+      .call_return(3, [](const std::string& value) { return value; });
+
+  CHECK(two_expected == std::string("twofour"));
+  CHECK(three_expected == std::string("three"));
+}
+
+TEST_CASE("Container call return with handle produces expected value")
+{
+  thh::packed_hashtable_t<int, std::string> packed_hashtable;
+  packed_hashtable.add({1, "one"});
+  packed_hashtable.add({2, "two"});
+  packed_hashtable.add({3, "three"});
+
+  auto key_handle_two = packed_hashtable.find(2);
+  auto two_expected = packed_hashtable.call_return(
+    key_handle_two->second, [](std::string& value) {
+      value += "four";
+      return value;
+    });
+
+  auto key_handle_three = packed_hashtable.find(3);
+  auto three_expected =
+    std::as_const(packed_hashtable)
+      .call_return(key_handle_three->second, [](const std::string& value) {
+        return value;
+      });
+
+  CHECK(two_expected == std::string("twofour"));
+  CHECK(three_expected == std::string("three"));
+}

@@ -65,6 +65,20 @@ namespace thh
 
   template<typename Key, typename Value>
   typename packed_hashtable_t<Key, Value>::handle_iterator packed_hashtable_t<
+    Key, Value>::find(const Key& key)
+  {
+    return handles_.find(key);
+  }
+
+  template<typename Key, typename Value>
+  typename packed_hashtable_t<Key, Value>::const_handle_iterator
+  packed_hashtable_t<Key, Value>::find(const Key& key) const
+  {
+    return handles_.find(key);
+  }
+
+  template<typename Key, typename Value>
+  typename packed_hashtable_t<Key, Value>::handle_iterator packed_hashtable_t<
     Key, Value>::remove(const Key& key)
   {
     if (auto lookup = handles_.find(key); lookup != handles_.end()) {
@@ -79,7 +93,9 @@ namespace thh
   typename packed_hashtable_t<Key, Value>::handle_iterator packed_hashtable_t<
     Key, Value>::remove(handle_iterator position)
   {
-    return remove(position->first);
+    [[maybe_unused]] const auto removed = values_.remove(position->second);
+    assert(removed);
+    return handles_.erase(position);
   }
 
   template<typename Key, typename Value>
@@ -114,7 +130,7 @@ namespace thh
   void packed_hashtable_t<Key, Value>::call(const Key& key, Fn&& fn)
   {
     if (auto lookup = handles_.find(key); lookup != handles_.end()) {
-      values_.call(lookup->second, std::forward<Fn&&>(fn));
+      values_.call(lookup->second, std::forward<Fn>(fn));
     }
   }
 
@@ -123,7 +139,7 @@ namespace thh
   void packed_hashtable_t<Key, Value>::call(
     const packed_hashtable_handle_t handle, Fn&& fn)
   {
-    values_.call(handle, std::forward<Fn&&>(fn));
+    values_.call(handle, std::forward<Fn>(fn));
   }
 
   template<typename Key, typename Value>
@@ -131,16 +147,54 @@ namespace thh
   void packed_hashtable_t<Key, Value>::call(const Key& key, Fn&& fn) const
   {
     if (auto lookup = handles_.find(key); lookup != handles_.end()) {
-      values_.call(lookup->second, std::forward<Fn&&>(fn));
+      values_.call(lookup->second, std::forward<Fn>(fn));
     }
   }
 
   template<typename Key, typename Value>
   template<typename Fn>
   void packed_hashtable_t<Key, Value>::call(
-    packed_hashtable_handle_t handle, Fn&& fn) const
+    const packed_hashtable_handle_t handle, Fn&& fn) const
   {
-    values_.call(handle, std::forward<Fn&&>(fn));
+    values_.call(handle, std::forward<Fn>(fn));
+  }
+
+  template<typename Key, typename Value>
+  template<typename Fn>
+  decltype(auto) packed_hashtable_t<Key, Value>::call_return(
+    const Key& key, Fn&& fn)
+  {
+    if (auto lookup = handles_.find(key); lookup != handles_.end()) {
+      return values_.call_return(lookup->second, std::forward<Fn>(fn));
+    }
+    return std::optional<decltype(fn(*(static_cast<Value*>(nullptr))))>{};
+  }
+
+  template<typename Key, typename Value>
+  template<typename Fn>
+  decltype(auto) packed_hashtable_t<Key, Value>::call_return(
+    const packed_hashtable_handle_t handle, Fn&& fn)
+  {
+    return values_.call_return(handle, std::forward<Fn>(fn));
+  }
+
+  template<typename Key, typename Value>
+  template<typename Fn>
+  decltype(auto) packed_hashtable_t<Key, Value>::call_return(
+    const Key& key, Fn&& fn) const
+  {
+    if (auto lookup = handles_.find(key); lookup != handles_.end()) {
+      return values_.call_return(lookup->second, std::forward<Fn>(fn));
+    }
+    return std::optional<decltype(fn(*(static_cast<Value*>(nullptr))))>{};
+  }
+
+  template<typename Key, typename Value>
+  template<typename Fn>
+  decltype(auto) packed_hashtable_t<Key, Value>::call_return(
+    const packed_hashtable_handle_t handle, Fn&& fn) const
+  {
+    return values_.call_return(handle, std::forward<Fn>(fn));
   }
 
   template<typename Key, typename Value>
