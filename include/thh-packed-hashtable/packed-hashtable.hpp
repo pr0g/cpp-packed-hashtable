@@ -26,8 +26,8 @@ namespace thh
     template<typename P>
     std::pair<handle_iterator, bool> add_or_update(P&& key_value);
     std::pair<handle_iterator, bool> add_or_update(key_value_type&& key_value);
-    handle_iterator find(const Key& key);
-    const_handle_iterator find(const Key& key) const;
+    [[nodiscard]] handle_iterator find(const Key& key);
+    [[nodiscard]] const_handle_iterator find(const Key& key) const;
     handle_iterator remove(const Key& key);
     handle_iterator remove(handle_iterator position);
     [[nodiscard]] bool has(const Key& key) const;
@@ -114,22 +114,23 @@ namespace thh
       auto cend() const -> const_value_iterator { return pht_->vcend(); }
     };
 
-    auto handle_iteration() -> handle_iterator_wrapper_t
+    [[nodiscard]] auto handle_iteration() -> handle_iterator_wrapper_t
     {
       return handle_iterator_wrapper_t(*this);
     }
 
-    auto handle_iteration() const -> const_handle_iterator_wrapper_t
+    [[nodiscard]] auto handle_iteration() const
+      -> const_handle_iterator_wrapper_t
     {
       return const_handle_iterator_wrapper_t(*this);
     }
 
-    auto value_iteration() -> value_iterator_wrapper_t
+    [[nodiscard]] auto value_iteration() -> value_iterator_wrapper_t
     {
       return value_iterator_wrapper_t(*this);
     }
 
-    auto value_iteration() const -> const_value_iterator_wrapper_t
+    [[nodiscard]] auto value_iteration() const -> const_value_iterator_wrapper_t
     {
       return const_value_iterator_wrapper_t(*this);
     }

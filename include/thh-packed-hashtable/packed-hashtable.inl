@@ -8,11 +8,9 @@ namespace thh
     if (auto lookup = handles_.find(key_value.first);
         lookup != handles_.end()) {
       return {lookup, false};
-    } else {
-      const auto handle = values_.add(std::forward<Value>(key_value.second));
-      return handles_.insert(
-        {std::forward<const Key>(key_value.first), handle});
     }
+    const auto handle = values_.add(std::forward<Value>(key_value.second));
+    return handles_.insert({std::forward<const Key>(key_value.first), handle});
   }
 
   template<typename Key, typename Value>
@@ -26,11 +24,9 @@ namespace thh
         value = std::forward<Value>(key_value.second);
       });
       return {lookup, false};
-    } else {
-      const auto handle = values_.add(std::forward<Value>(key_value.second));
-      return handles_.insert(
-        {std::forward<const Key>(key_value.first), handle});
     }
+    const auto handle = values_.add(std::forward<Value>(key_value.second));
+    return handles_.insert({std::forward<const Key>(key_value.first), handle});
   }
 
   template<typename Key, typename Value>
