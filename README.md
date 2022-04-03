@@ -54,3 +54,33 @@ There are quite a few benchmarks for a varying numbers of elements with differen
 The benchmarks at the time of writing are pretty simple (visit every element and read a value from the first byte of each). Real world conditions are likely going to be quite more varied and the gains may not be as significant (one would wager likely still noticeable though).
 
 There aren't currently benchmarks comparing additions/removals (these will be added soon...). The priority was to measure iteration performance first and foremost which is why the majority of benchmarks are focussed around that criteria.
+
+## Usage
+
+To use the library it's possible to drop the `thh-packed-hashtable` folder inside `include` into your project (and then just `#include "thh-packed-hashtable/packed-hashtable.hpp"`) or use CMake's `FetchContent` command.
+
+e.g.
+
+```cmake
+# CMakeLists.txt
+include(FetchContent)
+FetchContent_Declare(
+  thh-packed-hashtable
+  GIT_REPOSITORY https://github.com/pr0g/cpp-packed-hashtable.git
+  GIT_TAG        <latest-commit>)
+FetchContent_MakeAvailable(thh-packed-hashtable)
+...
+target_link_libraries(<your-project> <PRIVATE/PUBLIC> thh-packed-hashtable)
+```
+
+To build the examples (`bench.cpp`, `test.cpp` and `memory.cpp`) pass `-DTHH_PACKED_HASHTABLE_ENABLE_MEMORY=ON`, `-DTHH_PACKED_HASHTABLE_ENABLE_TEST=ON` and/or `-DTHH_PACKED_HASHTABLE_ENABLE_BENCH=ON` respectively to the CMake configure command when building from the root of this repo.
+
+e.g.
+
+```bash
+cd <thh-packed-hashtable root>
+cmake -B build -DTHH_PACKED_HASHTABLE_ENABLE_MEMORY=ON -DTHH_PACKED_HASHTABLE_ENABLE_TEST=ON -DTHH_PACKED_HASHTABLE_ENABLE_BENCH=ON
+cmake --build build
+```
+
+Also remember to pass `-DCMAKE_BUILD_TYPE=Release` when running the benchmarks if using a single-config generator (with multi-config generators like Visual Studio you can use `cmake --build build --config Release` at build time).
