@@ -11,7 +11,7 @@ struct object_t
 };
 
 template<typename T>
-void iterate_lookup(benchmark::State& state)
+void iterate_packed_hashtable_values(benchmark::State& state)
 {
   thh::packed_hashtable_t<std::string, T> packed_hashtable;
   packed_hashtable.reserve(static_cast<int32_t>(state.range(0)));
@@ -29,7 +29,7 @@ void iterate_lookup(benchmark::State& state)
 }
 
 template<typename T>
-static void iterate_map(benchmark::State& state)
+static void iterate_unordered_map(benchmark::State& state)
 {
   std::unordered_map<std::string, T> map;
   map.reserve(state.range(0));
@@ -47,7 +47,7 @@ static void iterate_map(benchmark::State& state)
 }
 
 template<typename T>
-static void iterate_lookup_handles(benchmark::State& state)
+static void iterate_packed_hashtable_handles(benchmark::State& state)
 {
   thh::packed_hashtable_t<std::string, T> packed_hashtable;
   packed_hashtable.reserve(static_cast<int32_t>(state.range(0)));
@@ -73,7 +73,8 @@ static void find_lookup(benchmark::State& state)
   thh::packed_hashtable_t<std::string, object_t<32>> packed_hashtable;
   packed_hashtable.reserve(static_cast<int32_t>(state.range(0)));
   for (int i = 0; i < state.range(); ++i) {
-    packed_hashtable.add({std::string("name") + std::to_string(i), object_t<32>{}});
+    packed_hashtable.add(
+      {std::string("name") + std::to_string(i), object_t<32>{}});
   }
 
   const auto lookup = std::string("name") + std::to_string(state.range(0) / 2);
@@ -107,78 +108,78 @@ static void find_map(benchmark::State& state)
 
 BENCHMARK(find_map)->RangeMultiplier(2)->Range(32, 8 << 12);
 
-BENCHMARK_TEMPLATE(iterate_map, object_t<32>)
+BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<32>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_map, object_t<64>)
+BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<64>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_map, object_t<128>)
+BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<128>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_map, object_t<256>)
+BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<256>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_map, object_t<512>)
+BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<512>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_map, object_t<1024>)
+BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<1024>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_map, object_t<2048>)
+BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<2048>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_map, object_t<4096>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-
-BENCHMARK_TEMPLATE(iterate_lookup_handles, object_t<32>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_lookup_handles, object_t<64>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_lookup_handles, object_t<128>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_lookup_handles, object_t<256>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_lookup_handles, object_t<512>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_lookup_handles, object_t<1024>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_lookup_handles, object_t<2048>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_lookup_handles, object_t<4096>)
+BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<4096>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
-BENCHMARK_TEMPLATE(iterate_lookup, object_t<32>)
+BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<32>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_lookup, object_t<64>)
+BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<64>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_lookup, object_t<128>)
+BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<128>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_lookup, object_t<256>)
+BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<256>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_lookup, object_t<512>)
+BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<512>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_lookup, object_t<1024>)
+BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<1024>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_lookup, object_t<2048>)
+BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<2048>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_lookup, object_t<4096>)
+BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<4096>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+
+BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<32>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<64>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<128>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<256>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<512>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<1024>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<2048>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<4096>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
