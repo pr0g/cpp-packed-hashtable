@@ -5,13 +5,27 @@
 
 namespace thh
 {
-  using packed_hashtable_handle_t = typed_handle_t<struct packed_hash_tag_t>;
+  // default tag for packed_hashtable handles
+  struct packed_hashtable_tag_t
+  {
+  };
 
-  template<typename Key, typename Value>
+  // alias for default packed hashtable handle if a custom tag is not used
+  using packed_hashtable_handle_t = typed_handle_t<packed_hashtable_tag_t>;
+
+  // hybrid lookup container for efficient element iteration at the cost of
+  // additional memory usage
+  // values are stored in a handle_vector_t (elements are tightly packed and are
+  // accessible through an indirect handle as well as direct iteration)
+  // keys are stored in an unordered_map and its values are the handles to the
+  // underlying elements stored in the handle_vector_t
+  template<typename Key, typename Value, typename Tag = packed_hashtable_tag_t>
   class packed_hashtable_t
   {
-    handle_vector_t<Value, struct packed_hash_tag_t> values_;
-    std::unordered_map<Key, packed_hashtable_handle_t> handles_;
+    // store for underlying values
+    handle_vector_t<Value, Tag> values_;
+    // key to handle mapping (key -> handle -> value)
+    std::unordered_map<Key, typed_handle_t<Tag>> handles_;
 
   public:
     using key_value_type = std::pair<const Key, Value>;
@@ -20,49 +34,123 @@ namespace thh
     using handle_iterator = typename decltype(handles_)::iterator;
     using const_handle_iterator = typename decltype(handles_)::const_iterator;
 
+    // adds a value to the container (forwarding reference)
+    // returns a pair consisting of an interator to the inserted element (or to
+    // the element that prevented the insertion) and a bool indicating whether
+    // the insertion took place
+    // type P should conform to key_value_type
     template<typename P>
     std::pair<handle_iterator, bool> add(P&& key_value);
+    // adds a value to the container (rvalue reference)
+    // returns a pair consisting of an interator to the inserted element (or to
+    // the element that prevented the insertion) and a bool indicating whether
+    // the insertion took place
+    // note: supports .add({key, value}) syntax
     std::pair<handle_iterator, bool> add(key_value_type&& key_value);
+    // adds a value to the container or updates it if the key already exists
+    // returns a pair consisting of an interator to the inserted or updated
+    // element and a bool indicating whether whether the insertion took place
+    // type P should conform to key_value_type
     template<typename P>
     std::pair<handle_iterator, bool> add_or_update(P&& key_value);
+    // adds a value to the container or updates it if the key already exists
+    // returns a pair consisting of an interator to the inserted or updated
+    // element and a bool indicating whether whether the insertion took place
+    // note: supports .add({key, value}) syntax
     std::pair<handle_iterator, bool> add_or_update(key_value_type&& key_value);
+    // finds a handle with the specified key
+    // returns an iterator to the discovered element or one past the end if the
+    // element was not found (hend())
     [[nodiscard]] handle_iterator find(const Key& key);
+    // finds a handle with the specified key (const overload)
+    // returns an iterator to the discovered element or one past the end if the
+    // element was not found (hend())
     [[nodiscard]] const_handle_iterator find(const Key& key) const;
+    // removes the element with the equivalent key (if one exists)
+    // returns an interator following the last removed element or one past the
+    // end if the element was not found (hend())
     handle_iterator remove(const Key& key);
+    // removes the element at position
+    // returns an interator following the last removed element (position must
+    // be valid and dereferenceable)
     handle_iterator remove(handle_iterator position);
+    // returns if the container has an element with the equivalent key
     [[nodiscard]] bool has(const Key& key) const;
+    // returns the number of available handles (includes element storage that is
+    // reserved but not yet in use)
+    // the capacity refers to the values underlying storage, not the key-handle
+    // pairs
     [[nodiscard]] int32_t capacity() const;
+    // removes all elements from the container
+    // note: will invalidate all handles
+    // note: capacity remains unchanged, internal handles are not cleared
     void clear();
+    // reserves underlying memory for the number of elements specified
+    // note: will attempt to reserve capacity for the key-handle pairs as well
     void reserve(int32_t capacity);
+    // returns the number of elements currently stored in the container
     [[nodiscard]] int32_t size() const;
+    // returns if the container has any elements or not
     [[nodiscard]] bool empty() const;
+    // invokes a callable object on an element in the container using a key
     template<typename Fn>
     void call(const Key& key, Fn&& fn);
+    // invokes a callable object on an element in the container using a handle
     template<typename Fn>
-    void call(packed_hashtable_handle_t handle, Fn&& fn);
+    void call(typed_handle_t<Tag> handle, Fn&& fn);
+    // invokes a callable object on an element in the container using a key
+    // (const overload)
     template<typename Fn>
     void call(const Key& key, Fn&& fn) const;
+    // invokes a callable object on an element in the container using a handle
+    // (const overload)
     template<typename Fn>
-    void call(packed_hashtable_handle_t handle, Fn&& fn) const;
+    void call(typed_handle_t<Tag> handle, Fn&& fn) const;
+    // invokes a callable object on an element in the container and returns a
+    // std::optional containing either the result or an empty optional (as the
+    // key may not have been found)
     template<typename Fn>
     decltype(auto) call_return(const Key& key, Fn&& fn);
+    // invokes a callable object on an element in the container and returns a
+    // std::optional containing either the result or an empty optional (as the
+    // handle may not have been successfully resolved)
     template<typename Fn>
-    decltype(auto) call_return(packed_hashtable_handle_t handle, Fn&& fn);
+    decltype(auto) call_return(typed_handle_t<Tag> handle, Fn&& fn);
+    // invokes a callable object on an element in the container and returns a
+    // std::optional containing either the result or an empty optional (as the
+    // key may not have been found)
+    // (const overload)
     template<typename Fn>
     decltype(auto) call_return(const Key& key, Fn&& fn) const;
+    // invokes a callable object on an element in the container and returns a
+    // std::optional containing either the result or an empty optional (as the
+    // handle may not have been successfully resolved)
+    // (const overload)
     template<typename Fn>
-    decltype(auto) call_return(packed_hashtable_handle_t handle, Fn&& fn) const;
+    decltype(auto) call_return(typed_handle_t<Tag> handle, Fn&& fn) const;
+    // returns an iterator to the beginning of the values (contiguous)
     [[nodiscard]] auto vbegin() -> value_iterator;
+    // returns a const iterator to the beginning of the values (contiguous)
     [[nodiscard]] auto vbegin() const -> const_value_iterator;
+    // returns a const iterator to the beginning of the values (contiguous)
     [[nodiscard]] auto vcbegin() const -> const_value_iterator;
+    // returns an iterator to the end of the values (contiguous)
     [[nodiscard]] auto vend() -> value_iterator;
+    // returns a const iterator to the end of the values (contiguous)
     [[nodiscard]] auto vend() const -> const_value_iterator;
+    // returns a const iterator to the end of the values (contiguous)
     [[nodiscard]] auto vcend() const -> const_value_iterator;
+    // returns an iterator to the beginning of the handles (sparse)
     [[nodiscard]] auto hbegin() -> handle_iterator;
+    // returns a const iterator to the beginning of the handles (sparse)
     [[nodiscard]] auto hbegin() const -> const_handle_iterator;
+    // returns a const iterator to the beginning of the handles (sparse)
     [[nodiscard]] auto hcbegin() const -> const_handle_iterator;
+    // returns an iterator to the end of the handles (sparse)
     [[nodiscard]] auto hend() -> handle_iterator;
+    // returns a const iterator to the end of the handles (sparse)
     [[nodiscard]] auto hend() const -> const_handle_iterator;
+    // returns a const iterator to the end of the handles (sparse)
     [[nodiscard]] auto hcend() const -> const_handle_iterator;
 
     class handle_iterator_wrapper_t
@@ -71,8 +159,8 @@ namespace thh
 
     public:
       handle_iterator_wrapper_t(packed_hashtable_t& pht) : pht_(&pht) {}
-      auto begin() -> handle_iterator { return pht_->hbegin(); }
-      auto end() -> handle_iterator { return pht_->hend(); }
+      [[nodiscard]] auto begin() -> handle_iterator { return pht_->hbegin(); }
+      [[nodiscard]] auto end() -> handle_iterator { return pht_->hend(); }
     };
 
     class const_handle_iterator_wrapper_t
@@ -84,10 +172,22 @@ namespace thh
         : pht_(&pht)
       {
       }
-      auto begin() const -> const_handle_iterator { return pht_->hbegin(); }
-      auto cbegin() const -> const_handle_iterator { return pht_->hcbegin(); }
-      auto end() const -> const_handle_iterator { return pht_->hend(); }
-      auto cend() const -> const_handle_iterator { return pht_->hcend(); }
+      [[nodiscard]] auto begin() const -> const_handle_iterator
+      {
+        return pht_->hbegin();
+      }
+      [[nodiscard]] auto cbegin() const -> const_handle_iterator
+      {
+        return pht_->hcbegin();
+      }
+      [[nodiscard]] auto end() const -> const_handle_iterator
+      {
+        return pht_->hend();
+      }
+      [[nodiscard]] auto cend() const -> const_handle_iterator
+      {
+        return pht_->hcend();
+      }
     };
 
     class value_iterator_wrapper_t
@@ -96,8 +196,8 @@ namespace thh
 
     public:
       value_iterator_wrapper_t(packed_hashtable_t& pht) : pht_(&pht) {}
-      auto begin() -> value_iterator { return pht_->vbegin(); }
-      auto end() -> value_iterator { return pht_->vend(); }
+      [[nodiscard]] auto begin() -> value_iterator { return pht_->vbegin(); }
+      [[nodiscard]] auto end() -> value_iterator { return pht_->vend(); }
     };
 
     class const_value_iterator_wrapper_t
@@ -108,10 +208,22 @@ namespace thh
       const_value_iterator_wrapper_t(const packed_hashtable_t& pht) : pht_(&pht)
       {
       }
-      auto begin() const -> const_value_iterator { return pht_->vbegin(); }
-      auto cbegin() const -> const_value_iterator { return pht_->vcbegin(); }
-      auto end() const -> const_value_iterator { return pht_->vend(); }
-      auto cend() const -> const_value_iterator { return pht_->vcend(); }
+      [[nodiscard]] auto begin() const -> const_value_iterator
+      {
+        return pht_->vbegin();
+      }
+      [[nodiscard]] auto cbegin() const -> const_value_iterator
+      {
+        return pht_->vcbegin();
+      }
+      [[nodiscard]] auto end() const -> const_value_iterator
+      {
+        return pht_->vend();
+      }
+      [[nodiscard]] auto cend() const -> const_value_iterator
+      {
+        return pht_->vcend();
+      }
     };
 
     [[nodiscard]] auto handle_iteration() -> handle_iterator_wrapper_t
