@@ -286,4 +286,152 @@ namespace thh
   {
     return handles_.cend();
   }
+
+  template<typename Key, typename Value, typename Tag>
+  packed_hashtable_t<Key, Value, Tag>::handle_iterator_wrapper_t::
+    handle_iterator_wrapper_t(packed_hashtable_t& pht)
+    : pht_(&pht)
+  {
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  auto packed_hashtable_t<Key, Value, Tag>::handle_iterator_wrapper_t::begin()
+    -> handle_iterator
+  {
+    return pht_->hbegin();
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  auto packed_hashtable_t<Key, Value, Tag>::handle_iterator_wrapper_t::end()
+    -> handle_iterator
+  {
+    return pht_->hend();
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  packed_hashtable_t<Key, Value, Tag>::const_handle_iterator_wrapper_t::
+    const_handle_iterator_wrapper_t(const packed_hashtable_t& pht)
+    : pht_(&pht)
+  {
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  auto packed_hashtable_t<
+    Key, Value, Tag>::const_handle_iterator_wrapper_t::begin() const
+    -> const_handle_iterator
+  {
+    return pht_->hbegin();
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  auto packed_hashtable_t<
+    Key, Value, Tag>::const_handle_iterator_wrapper_t::cbegin() const
+    -> const_handle_iterator
+  {
+    return pht_->hcbegin();
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  auto packed_hashtable_t<
+    Key, Value, Tag>::const_handle_iterator_wrapper_t::end() const
+    -> const_handle_iterator
+  {
+    return pht_->hend();
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  auto packed_hashtable_t<
+    Key, Value, Tag>::const_handle_iterator_wrapper_t::cend() const
+    -> const_handle_iterator
+  {
+    return pht_->hcend();
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  packed_hashtable_t<Key, Value, Tag>::value_iterator_wrapper_t::
+    value_iterator_wrapper_t(packed_hashtable_t& pht)
+    : pht_(&pht)
+  {
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  auto packed_hashtable_t<Key, Value, Tag>::value_iterator_wrapper_t::begin()
+    -> value_iterator
+  {
+    return pht_->vbegin();
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  auto packed_hashtable_t<Key, Value, Tag>::value_iterator_wrapper_t::end()
+    -> value_iterator
+  {
+    return pht_->vend();
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  packed_hashtable_t<Key, Value, Tag>::const_value_iterator_wrapper_t::
+    const_value_iterator_wrapper_t(const packed_hashtable_t& pht)
+    : pht_(&pht)
+  {
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  auto packed_hashtable_t<
+    Key, Value, Tag>::const_value_iterator_wrapper_t::begin() const
+    -> const_value_iterator
+  {
+    return pht_->vbegin();
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  auto packed_hashtable_t<
+    Key, Value, Tag>::const_value_iterator_wrapper_t::cbegin() const
+    -> const_value_iterator
+  {
+    return pht_->vcbegin();
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  auto packed_hashtable_t<
+    Key, Value, Tag>::const_value_iterator_wrapper_t::end() const
+    -> const_value_iterator
+  {
+    return pht_->vend();
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  auto packed_hashtable_t<
+    Key, Value, Tag>::const_value_iterator_wrapper_t::cend() const
+    -> const_value_iterator
+  {
+    return pht_->vcend();
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  auto packed_hashtable_t<Key, Value, Tag>::handle_iteration()
+    -> handle_iterator_wrapper_t
+  {
+    return handle_iterator_wrapper_t(*this);
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  auto packed_hashtable_t<Key, Value, Tag>::handle_iteration() const
+    -> const_handle_iterator_wrapper_t
+  {
+    return const_handle_iterator_wrapper_t(*this);
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  auto packed_hashtable_t<Key, Value, Tag>::value_iteration()
+    -> value_iterator_wrapper_t
+  {
+    return value_iterator_wrapper_t(*this);
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  auto packed_hashtable_t<Key, Value, Tag>::value_iteration() const
+    -> const_value_iterator_wrapper_t
+  {
+    return const_value_iterator_wrapper_t(*this);
+  }
 } // namespace thh

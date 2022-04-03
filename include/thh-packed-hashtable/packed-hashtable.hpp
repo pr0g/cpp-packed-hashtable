@@ -153,103 +153,83 @@ namespace thh
     // returns a const iterator to the end of the handles (sparse)
     [[nodiscard]] auto hcend() const -> const_handle_iterator;
 
+    // proxy to support friendly iteration for handles (see handle_iteration())
+    // note: to be used with range based for
+    // for (auto handle : packed_hashtable.handle_iteration())
     class handle_iterator_wrapper_t
     {
       packed_hashtable_t* pht_ = nullptr;
 
     public:
-      handle_iterator_wrapper_t(packed_hashtable_t& pht) : pht_(&pht) {}
-      [[nodiscard]] auto begin() -> handle_iterator { return pht_->hbegin(); }
-      [[nodiscard]] auto end() -> handle_iterator { return pht_->hend(); }
+      handle_iterator_wrapper_t(packed_hashtable_t& pht);
+      [[nodiscard]] auto begin() -> handle_iterator;
+      [[nodiscard]] auto end() -> handle_iterator;
     };
 
+    // proxy to support friendly iteration for handles (see handle_iteration())
+    // note: to be used with range based for (const version)
+    // for (auto handle : packed_hashtable.handle_iteration())
     class const_handle_iterator_wrapper_t
     {
       const packed_hashtable_t* pht_ = nullptr;
 
     public:
-      const_handle_iterator_wrapper_t(const packed_hashtable_t& pht)
-        : pht_(&pht)
-      {
-      }
-      [[nodiscard]] auto begin() const -> const_handle_iterator
-      {
-        return pht_->hbegin();
-      }
-      [[nodiscard]] auto cbegin() const -> const_handle_iterator
-      {
-        return pht_->hcbegin();
-      }
-      [[nodiscard]] auto end() const -> const_handle_iterator
-      {
-        return pht_->hend();
-      }
-      [[nodiscard]] auto cend() const -> const_handle_iterator
-      {
-        return pht_->hcend();
-      }
+      const_handle_iterator_wrapper_t(const packed_hashtable_t& pht);
+      [[nodiscard]] auto begin() const -> const_handle_iterator;
+      [[nodiscard]] auto cbegin() const -> const_handle_iterator;
+      [[nodiscard]] auto end() const -> const_handle_iterator;
+      [[nodiscard]] auto cend() const -> const_handle_iterator;
     };
 
+    // proxy to support friendly iteration for values (see value_iteration())
+    // note: to be used with range based for
+    // for (auto& value : packed_hashtable.value_iteration())
     class value_iterator_wrapper_t
     {
       packed_hashtable_t* pht_ = nullptr;
 
     public:
-      value_iterator_wrapper_t(packed_hashtable_t& pht) : pht_(&pht) {}
-      [[nodiscard]] auto begin() -> value_iterator { return pht_->vbegin(); }
-      [[nodiscard]] auto end() -> value_iterator { return pht_->vend(); }
+      value_iterator_wrapper_t(packed_hashtable_t& pht);
+      [[nodiscard]] auto begin() -> value_iterator;
+      [[nodiscard]] auto end() -> value_iterator;
     };
 
+    // proxy to support friendly iteration for values (see value_iteration())
+    // note: to be used with range based for (const version)
+    // for (const auto& value : packed_hashtable.value_iteration())
     class const_value_iterator_wrapper_t
     {
       const packed_hashtable_t* pht_ = nullptr;
 
     public:
-      const_value_iterator_wrapper_t(const packed_hashtable_t& pht) : pht_(&pht)
-      {
-      }
-      [[nodiscard]] auto begin() const -> const_value_iterator
-      {
-        return pht_->vbegin();
-      }
-      [[nodiscard]] auto cbegin() const -> const_value_iterator
-      {
-        return pht_->vcbegin();
-      }
-      [[nodiscard]] auto end() const -> const_value_iterator
-      {
-        return pht_->vend();
-      }
-      [[nodiscard]] auto cend() const -> const_value_iterator
-      {
-        return pht_->vcend();
-      }
+      const_value_iterator_wrapper_t(const packed_hashtable_t& pht);
+      [[nodiscard]] auto begin() const -> const_value_iterator;
+      [[nodiscard]] auto cbegin() const -> const_value_iterator;
+      [[nodiscard]] auto end() const -> const_value_iterator;
+      [[nodiscard]] auto cend() const -> const_value_iterator;
     };
 
-    [[nodiscard]] auto handle_iteration() -> handle_iterator_wrapper_t
-    {
-      return handle_iterator_wrapper_t(*this);
-    }
-
+    // returns a proxy object to the container to provide begin/end iterators
+    // for handles (to be used with range based for loop)
+    [[nodiscard]] auto handle_iteration() -> handle_iterator_wrapper_t;
+    // returns a proxy object to the container to provide begin/end iterators
+    // for handles (to be used with range based for loop) (const overload)
     [[nodiscard]] auto handle_iteration() const
-      -> const_handle_iterator_wrapper_t
-    {
-      return const_handle_iterator_wrapper_t(*this);
-    }
-
-    [[nodiscard]] auto value_iteration() -> value_iterator_wrapper_t
-    {
-      return value_iterator_wrapper_t(*this);
-    }
-
-    [[nodiscard]] auto value_iteration() const -> const_value_iterator_wrapper_t
-    {
-      return const_value_iterator_wrapper_t(*this);
-    }
+      -> const_handle_iterator_wrapper_t;
+    // returns a proxy object to container to provide begin/end iterators for
+    // values (to be used with range based for loop)
+    [[nodiscard]] auto value_iteration() -> value_iterator_wrapper_t;
+    // returns a proxy object to container to provide begin/end iterators for
+    // values (to be used with range based for loop) (const overload)
+    [[nodiscard]] auto value_iteration() const
+      -> const_value_iterator_wrapper_t;
 
   private:
+    // internal implementation of add, used by both public add overloads
     template<typename P>
     std::pair<handle_iterator, bool> add_internal(P&& key_value);
+    // internal implementation of add_or_update, used by both public
+    // add_or_update overloads
     template<typename P>
     std::pair<handle_iterator, bool> add_or_update_internal(P&& key_value);
   };
