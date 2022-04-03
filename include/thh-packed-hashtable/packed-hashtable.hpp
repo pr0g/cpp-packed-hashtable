@@ -64,7 +64,7 @@ namespace thh
     [[nodiscard]] handle_iterator find(const Key& key);
     // finds a handle with the specified key (const overload)
     // returns an iterator to the discovered element or one past the end if the
-    // element was not found (hend())
+    // element was not found (hcend())
     [[nodiscard]] const_handle_iterator find(const Key& key) const;
     // removes the element with the equivalent key (if one exists)
     // returns an interator following the last removed element or one past the
