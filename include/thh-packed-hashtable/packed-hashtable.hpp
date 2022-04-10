@@ -5,6 +5,25 @@
 
 namespace thh
 {
+  template<class T>
+  inline void hash_combine(std::size_t& seed, const T& v)
+  {
+    std::hash<T> hasher;
+    seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+  }
+
+  template<typename Tag>
+  struct typed_handle_hash_t
+  {
+    std::size_t operator()(const typed_handle_t<Tag>& handle) const
+    {
+      std::size_t seed = 0;
+      hash_combine(seed, handle.gen_);
+      hash_combine(seed, handle.id_);
+      return seed;
+    }
+  };
+
   // default tag for packed_hashtable handles
   struct packed_hashtable_tag_t
   {
@@ -25,14 +44,18 @@ namespace thh
     // store for underlying values
     handle_vector_t<Value, Tag> values_;
     // key to handle mapping (key -> handle -> value)
-    std::unordered_map<Key, typed_handle_t<Tag>> handles_;
+    std::unordered_map<Key, typed_handle_t<Tag>> keys_to_handles_;
+    // key to handle mapping (value -> handle -> key)
+    std::unordered_map<typed_handle_t<Tag>, Key, typed_handle_hash_t<Tag>>
+      handles_to_keys;
 
   public:
     using key_value_type = std::pair<const Key, Value>;
     using value_iterator = typename decltype(values_)::iterator;
     using const_value_iterator = typename decltype(values_)::const_iterator;
-    using handle_iterator = typename decltype(handles_)::iterator;
-    using const_handle_iterator = typename decltype(handles_)::const_iterator;
+    using handle_iterator = typename decltype(keys_to_handles_)::iterator;
+    using const_handle_iterator =
+      typename decltype(keys_to_handles_)::const_iterator;
 
     // adds a value to the container (forwarding reference)
     // returns a pair consisting of an interator to the inserted element (or to
@@ -74,8 +97,12 @@ namespace thh
     // returns an interator following the last removed element (position must
     // be valid and dereferenceable)
     handle_iterator remove(handle_iterator position);
+    //
+    bool remove(typed_handle_t<Tag> handle);
     // returns if the container has an element with the equivalent key
     [[nodiscard]] bool has(const Key& key) const;
+    //
+    [[nodiscard]] typed_handle_t<Tag> handle_from_index(int32_t index);
     // returns the number of available handles (includes element storage that is
     // reserved but not yet in use)
     // the capacity refers to the values underlying storage, not the key-handle

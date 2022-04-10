@@ -3,6 +3,7 @@
 #include <benchmark/benchmark.h>
 
 #include <cstdint>
+#include <random>
 
 template<int32_t Size>
 struct object_t
@@ -68,6 +69,168 @@ static void iterate_packed_hashtable_handles(benchmark::State& state)
   }
 }
 
+struct vec3_t
+{
+  float x, y, z;
+};
+
+struct color_t
+{
+  float r, g, b, a;
+};
+
+// 48 bytes
+struct particle_t
+{
+  vec3_t position_;
+  vec3_t velocity_;
+  color_t color_;
+  float size_;
+  float lifetime_;
+};
+
+static void iterate_packed_hashtable_values_example(benchmark::State& state)
+{
+  thh::packed_hashtable_t<std::string, particle_t> packed_hashtable_particles;
+  packed_hashtable_particles.reserve(static_cast<int32_t>(state.range(0)));
+  for (int i = 0; i < state.range(0); ++i) {
+    packed_hashtable_particles.add(
+      {std::string("name") + std::to_string(i), particle_t{}});
+  }
+
+  for ([[maybe_unused]] auto _ : state) {
+    std::for_each(
+      packed_hashtable_particles.vbegin(), packed_hashtable_particles.vend(),
+      [](auto& particle) {
+        particle.position_.x += particle.velocity_.x;
+        particle.position_.y += particle.velocity_.y;
+        particle.position_.z += particle.velocity_.z;
+        particle.color_.r = std::max(0.0f, particle.color_.r - 0.1f);
+        particle.color_.g = std::max(0.0f, particle.color_.g - 0.1f);
+        particle.color_.b = std::max(0.0f, particle.color_.b - 0.1f);
+        particle.lifetime_ -= 0.01666f;
+        particle.size_ += 0.01f;
+      });
+    benchmark::DoNotOptimize(packed_hashtable_particles);
+  }
+}
+
+BENCHMARK(iterate_packed_hashtable_values_example)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+
+static void iterate_unordered_map_values_example(benchmark::State& state)
+{
+  std::unordered_map<std::string, particle_t> map_particles;
+  map_particles.reserve(state.range(0));
+  for (int i = 0; i < state.range(0); ++i) {
+    map_particles.insert(
+      {std::string("name") + std::to_string(i), particle_t{}});
+  }
+
+  for ([[maybe_unused]] auto _ : state) {
+    std::for_each(
+      map_particles.begin(), map_particles.end(), [](auto& particle) {
+        particle.second.position_.x += particle.second.velocity_.x;
+        particle.second.position_.y += particle.second.velocity_.y;
+        particle.second.position_.z += particle.second.velocity_.z;
+        particle.second.color_.r =
+          std::max(0.0f, particle.second.color_.r - 0.1f);
+        particle.second.color_.g =
+          std::max(0.0f, particle.second.color_.g - 0.1f);
+        particle.second.color_.b =
+          std::max(0.0f, particle.second.color_.b - 0.1f);
+        particle.second.lifetime_ -= 0.01666f;
+        particle.second.size_ += 0.01f;
+      });
+    benchmark::DoNotOptimize(map_particles);
+  }
+}
+
+BENCHMARK(iterate_unordered_map_values_example)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+
+template<typename T>
+T random_between(T range_from, T range_to)
+{
+  std::random_device rand_dev;
+  std::mt19937 generator(rand_dev());
+  std::uniform_int_distribution<T> distr(range_from, range_to);
+  return distr(generator);
+}
+
+static void iterate_packed_hashtable_add_remove_handles_example(
+  benchmark::State& state)
+{
+  // char(*__kaboom)[sizeof(particle_t)] = 1;
+
+  thh::packed_hashtable_t<std::string, particle_t> packed_hashtable_particles;
+  packed_hashtable_particles.reserve(static_cast<int32_t>(state.range(0)));
+  for (int i = 0; i < state.range(0); ++i) {
+    packed_hashtable_particles.add(
+      {std::string("name") + std::to_string(i), particle_t{}});
+  }
+
+  // for (int i = 0; i < state.range(0) / 2; ++i) {
+  //   packed_hashtable_particles.remove(
+  //     std::string("name")
+  //     + std::to_string(random_between((int)0, (int)state.range())));
+  // }
+
+  // for (int i = 0; i < state.range(0); ++i) {
+  //   packed_hashtable_particles.add(
+  //     {std::string("name")
+  //        + std::to_string(packed_hashtable_particles.size() + 1),
+  //      particle_t{}});
+  // }
+
+  for ([[maybe_unused]] auto _ : state) {
+    std::for_each(
+      packed_hashtable_particles.hbegin(), packed_hashtable_particles.hend(),
+      [&packed_hashtable_particles](const auto& key_handle) {
+        packed_hashtable_particles.call(key_handle.second, [](auto& particle) {
+          particle.position_.x += particle.velocity_.x;
+          particle.position_.y += particle.velocity_.y;
+          particle.position_.z += particle.velocity_.z;
+          particle.color_.r = std::max(0.0f, particle.color_.r - 0.1f);
+          particle.color_.g = std::max(0.0f, particle.color_.g - 0.1f);
+          particle.color_.b = std::max(0.0f, particle.color_.b - 0.1f);
+          particle.lifetime_ -= 0.01666f;
+          particle.size_ += 0.01f;
+        });
+      });
+    benchmark::DoNotOptimize(packed_hashtable_particles);
+  }
+}
+
+BENCHMARK(iterate_packed_hashtable_add_remove_handles_example)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+
+void iterate_packed_hashtable_add_remove_values_example(
+  benchmark::State& state)
+{
+  thh::packed_hashtable_t<std::string, particle_t> packed_hashtable_particles;
+  packed_hashtable_particles.reserve(static_cast<int32_t>(state.range(0)));
+  for (int i = 0; i < state.range(0); ++i) {
+    packed_hashtable_particles.add(
+      {std::string("name") + std::to_string(i), particle_t{}});
+  }
+
+  for ([[maybe_unused]] auto _ : state) {
+    std::for_each(
+      packed_hashtable_particles.vbegin(), packed_hashtable_particles.vend(),
+      [&packed_hashtable_particles, index = 0](const auto& value) mutable {
+        if (value.lifetime_ <= 0.0f) {
+          auto handle = packed_hashtable_particles.handle_from_index(index);
+          packed_hashtable_particles.remove(handle);
+          index++;
+        }
+      });
+  }
+}
+
 static void find_lookup(benchmark::State& state)
 {
   thh::packed_hashtable_t<std::string, object_t<32>> packed_hashtable;
@@ -86,7 +249,7 @@ static void find_lookup(benchmark::State& state)
   }
 }
 
-BENCHMARK(find_lookup)->RangeMultiplier(2)->Range(32, 8 << 12);
+BENCHMARK(find_lookup)->RangeMultiplier(2)->Range(32, 8 << 13);
 
 static void find_map(benchmark::State& state)
 {
@@ -106,7 +269,7 @@ static void find_map(benchmark::State& state)
   }
 }
 
-BENCHMARK(find_map)->RangeMultiplier(2)->Range(32, 8 << 12);
+BENCHMARK(find_map)->RangeMultiplier(2)->Range(32, 8 << 13);
 
 BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<32>)
   ->RangeMultiplier(2)

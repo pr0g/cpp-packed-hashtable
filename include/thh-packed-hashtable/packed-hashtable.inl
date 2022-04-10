@@ -5,12 +5,14 @@ namespace thh
   std::pair<typename packed_hashtable_t<Key, Value, Tag>::handle_iterator, bool>
   packed_hashtable_t<Key, Value, Tag>::add_internal(P&& key_value)
   {
-    if (auto lookup = handles_.find(key_value.first);
-        lookup != handles_.end()) {
+    if (auto lookup = keys_to_handles_.find(key_value.first);
+        lookup != keys_to_handles_.end()) {
       return {lookup, false};
     }
     const auto handle = values_.add(std::forward<Value>(key_value.second));
-    return handles_.insert({std::forward<const Key>(key_value.first), handle});
+    handles_to_keys.insert({handle, std::forward<const Key>(key_value.first)});
+    return keys_to_handles_.insert(
+      {std::forward<const Key>(key_value.first), handle});
   }
 
   template<typename Key, typename Value, typename Tag>
@@ -18,15 +20,17 @@ namespace thh
   std::pair<typename packed_hashtable_t<Key, Value, Tag>::handle_iterator, bool>
   packed_hashtable_t<Key, Value, Tag>::add_or_update_internal(P&& key_value)
   {
-    if (auto lookup = handles_.find(key_value.first);
-        lookup != handles_.end()) {
+    if (auto lookup = keys_to_handles_.find(key_value.first);
+        lookup != keys_to_handles_.end()) {
       values_.call(lookup->second, [&key_value](Value& value) {
         value = std::forward<Value>(key_value.second);
       });
       return {lookup, false};
     }
     const auto handle = values_.add(std::forward<Value>(key_value.second));
-    return handles_.insert({std::forward<const Key>(key_value.first), handle});
+    handles_to_keys.insert({handle, std::forward<const Key>(key_value.first)});
+    return keys_to_handles_.insert(
+      {std::forward<const Key>(key_value.first), handle});
   }
 
   template<typename Key, typename Value, typename Tag>
@@ -63,26 +67,28 @@ namespace thh
   typename packed_hashtable_t<Key, Value, Tag>::handle_iterator
   packed_hashtable_t<Key, Value, Tag>::find(const Key& key)
   {
-    return handles_.find(key);
+    return keys_to_handles_.find(key);
   }
 
   template<typename Key, typename Value, typename Tag>
   typename packed_hashtable_t<Key, Value, Tag>::const_handle_iterator
   packed_hashtable_t<Key, Value, Tag>::find(const Key& key) const
   {
-    return handles_.find(key);
+    return keys_to_handles_.find(key);
   }
 
   template<typename Key, typename Value, typename Tag>
   typename packed_hashtable_t<Key, Value, Tag>::handle_iterator
   packed_hashtable_t<Key, Value, Tag>::remove(const Key& key)
   {
-    if (auto lookup = handles_.find(key); lookup != handles_.end()) {
-      [[maybe_unused]] const auto removed = values_.remove(lookup->second);
+    if (auto position = keys_to_handles_.find(key);
+        position != keys_to_handles_.end()) {
+      [[maybe_unused]] const auto removed = values_.remove(position->second);
       assert(removed);
-      return handles_.erase(lookup);
+      handles_to_keys.erase(position->second);
+      return keys_to_handles_.erase(position);
     }
-    return handles_.end();
+    return keys_to_handles_.end();
   }
 
   template<typename Key, typename Value, typename Tag>
@@ -91,13 +97,35 @@ namespace thh
   {
     [[maybe_unused]] const auto removed = values_.remove(position->second);
     assert(removed);
-    return handles_.erase(position);
+    handles_to_keys.erase(position->second);
+    return keys_to_handles_.erase(position);
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  bool packed_hashtable_t<Key, Value, Tag>::remove(
+    const typed_handle_t<Tag> handle)
+  {
+    if (const auto removed = values_.remove(handle)) {
+      if (const auto key = handles_to_keys.find(handle);
+          key != handles_to_keys.end()) {
+        handles_to_keys.erase(key);
+        return keys_to_handles_.erase(key->second) != 0;
+      }
+    }
+    return false;
   }
 
   template<typename Key, typename Value, typename Tag>
   bool packed_hashtable_t<Key, Value, Tag>::has(const Key& key) const
   {
-    return handles_.find(key) != handles_.end();
+    return keys_to_handles_.find(key) != keys_to_handles_.end();
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  typed_handle_t<Tag> packed_hashtable_t<Key, Value, Tag>::handle_from_index(
+    const int32_t index)
+  {
+    return values_.handle_from_index(index);
   }
 
   template<typename Key, typename Value, typename Tag>
@@ -110,7 +138,8 @@ namespace thh
   void packed_hashtable_t<Key, Value, Tag>::clear()
   {
     values_.clear();
-    handles_.clear();
+    keys_to_handles_.clear();
+    handles_to_keys.clear();
   }
 
   template<typename Key, typename Value, typename Tag>
@@ -118,14 +147,15 @@ namespace thh
   {
     assert(capacity > 0);
     values_.reserve(capacity);
-    handles_.reserve(capacity);
+    keys_to_handles_.reserve(capacity);
   }
 
   template<typename Key, typename Value, typename Tag>
   template<typename Fn>
   void packed_hashtable_t<Key, Value, Tag>::call(const Key& key, Fn&& fn)
   {
-    if (auto lookup = handles_.find(key); lookup != handles_.end()) {
+    if (auto lookup = keys_to_handles_.find(key);
+        lookup != keys_to_handles_.end()) {
       values_.call(lookup->second, std::forward<Fn>(fn));
     }
   }
@@ -142,7 +172,8 @@ namespace thh
   template<typename Fn>
   void packed_hashtable_t<Key, Value, Tag>::call(const Key& key, Fn&& fn) const
   {
-    if (auto lookup = handles_.find(key); lookup != handles_.end()) {
+    if (auto lookup = keys_to_handles_.find(key);
+        lookup != keys_to_handles_.end()) {
       values_.call(lookup->second, std::forward<Fn>(fn));
     }
   }
@@ -160,7 +191,8 @@ namespace thh
   decltype(auto) packed_hashtable_t<Key, Value, Tag>::call_return(
     const Key& key, Fn&& fn)
   {
-    if (auto lookup = handles_.find(key); lookup != handles_.end()) {
+    if (auto lookup = keys_to_handles_.find(key);
+        lookup != keys_to_handles_.end()) {
       return values_.call_return(lookup->second, std::forward<Fn>(fn));
     }
     return std::optional<decltype(fn(*(static_cast<Value*>(nullptr))))>{};
@@ -179,7 +211,8 @@ namespace thh
   decltype(auto) packed_hashtable_t<Key, Value, Tag>::call_return(
     const Key& key, Fn&& fn) const
   {
-    if (auto lookup = handles_.find(key); lookup != handles_.end()) {
+    if (auto lookup = keys_to_handles_.find(key);
+        lookup != keys_to_handles_.end()) {
       return values_.call_return(lookup->second, std::forward<Fn>(fn));
     }
     return std::optional<decltype(fn(*(static_cast<Value*>(nullptr))))>{};
@@ -196,7 +229,7 @@ namespace thh
   template<typename Key, typename Value, typename Tag>
   int32_t packed_hashtable_t<Key, Value, Tag>::size() const
   {
-    assert(handles_.size() == values_.size());
+    assert(keys_to_handles_.size() == values_.size());
     assert(values_.size() <= std::numeric_limits<int32_t>::max());
     return static_cast<int32_t>(values_.size());
   }
@@ -204,7 +237,7 @@ namespace thh
   template<typename Key, typename Value, typename Tag>
   bool packed_hashtable_t<Key, Value, Tag>::empty() const
   {
-    assert(handles_.empty() == values_.empty());
+    assert(keys_to_handles_.empty() == values_.empty());
     return values_.empty();
   }
 
@@ -250,41 +283,41 @@ namespace thh
   template<typename Key, typename Value, typename Tag>
   auto packed_hashtable_t<Key, Value, Tag>::hbegin() -> handle_iterator
   {
-    return handles_.begin();
+    return keys_to_handles_.begin();
   }
 
   template<typename Key, typename Value, typename Tag>
   auto packed_hashtable_t<Key, Value, Tag>::hbegin() const
     -> const_handle_iterator
   {
-    return handles_.begin();
+    return keys_to_handles_.begin();
   }
 
   template<typename Key, typename Value, typename Tag>
   auto packed_hashtable_t<Key, Value, Tag>::hcbegin() const
     -> const_handle_iterator
   {
-    return handles_.cbegin();
+    return keys_to_handles_.cbegin();
   }
 
   template<typename Key, typename Value, typename Tag>
   auto packed_hashtable_t<Key, Value, Tag>::hend() -> handle_iterator
   {
-    return handles_.end();
+    return keys_to_handles_.end();
   }
 
   template<typename Key, typename Value, typename Tag>
   auto packed_hashtable_t<Key, Value, Tag>::hend() const
     -> const_handle_iterator
   {
-    return handles_.end();
+    return keys_to_handles_.end();
   }
 
   template<typename Key, typename Value, typename Tag>
   auto packed_hashtable_t<Key, Value, Tag>::hcend() const
     -> const_handle_iterator
   {
-    return handles_.cend();
+    return keys_to_handles_.cend();
   }
 
   template<typename Key, typename Value, typename Tag>

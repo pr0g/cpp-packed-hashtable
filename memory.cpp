@@ -19,11 +19,12 @@ void operator delete(void* memory) noexcept
   free(memory);
 }
 
-int main(int argc, char** argv)
+template<int32_t Size>
+void run_memory_tracking()
 {
   struct object_t
   {
-    char data_[4096];
+    char data_[Size];
   };
 
   const std::array sizes{32,   64,   128,  256,    512,    1024,
@@ -108,6 +109,20 @@ int main(int argc, char** argv)
               << std::setw(2) << '(' << size << ")\n";
     g_total = 0;
   }
+
+  std::cout << '\n';
+}
+
+int main(int argc, char** argv)
+{
+  run_memory_tracking<32>();
+  run_memory_tracking<64>();
+  run_memory_tracking<128>();
+  run_memory_tracking<256>();
+  run_memory_tracking<512>();
+  run_memory_tracking<1024>();
+  run_memory_tracking<2048>();
+  run_memory_tracking<4096>();
 
   return 0;
 }
