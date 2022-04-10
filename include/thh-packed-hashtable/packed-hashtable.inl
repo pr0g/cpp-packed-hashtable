@@ -10,9 +10,10 @@ namespace thh
       return {lookup, false};
     }
     const auto handle = values_.add(std::forward<Value>(key_value.second));
-    handles_to_keys.insert({handle, std::forward<const Key>(key_value.first)});
-    return keys_to_handles_.insert(
+    const auto inserted = keys_to_handles_.insert(
       {std::forward<const Key>(key_value.first), handle});
+    handles_to_keys_.insert({handle, &inserted.first->first});
+    return inserted;
   }
 
   template<typename Key, typename Value, typename Tag>
@@ -28,9 +29,10 @@ namespace thh
       return {lookup, false};
     }
     const auto handle = values_.add(std::forward<Value>(key_value.second));
-    handles_to_keys.insert({handle, std::forward<const Key>(key_value.first)});
-    return keys_to_handles_.insert(
+    const auto inserted = keys_to_handles_.insert(
       {std::forward<const Key>(key_value.first), handle});
+    handles_to_keys_.insert({handle, &inserted.first->first});
+    return inserted;
   }
 
   template<typename Key, typename Value, typename Tag>
@@ -85,7 +87,7 @@ namespace thh
         position != keys_to_handles_.end()) {
       [[maybe_unused]] const auto removed = values_.remove(position->second);
       assert(removed);
-      handles_to_keys.erase(position->second);
+      handles_to_keys_.erase(position->second);
       return keys_to_handles_.erase(position);
     }
     return keys_to_handles_.end();
@@ -97,7 +99,7 @@ namespace thh
   {
     [[maybe_unused]] const auto removed = values_.remove(position->second);
     assert(removed);
-    handles_to_keys.erase(position->second);
+    handles_to_keys_.erase(position->second);
     return keys_to_handles_.erase(position);
   }
 
@@ -106,10 +108,10 @@ namespace thh
     const typed_handle_t<Tag> handle)
   {
     if (const auto removed = values_.remove(handle)) {
-      if (const auto key = handles_to_keys.find(handle);
-          key != handles_to_keys.end()) {
-        handles_to_keys.erase(key);
-        return keys_to_handles_.erase(key->second) != 0;
+      if (const auto key = handles_to_keys_.find(handle);
+          key != handles_to_keys_.end()) {
+        handles_to_keys_.erase(key);
+        return keys_to_handles_.erase(*key->second) != 0;
       }
     }
     return false;
@@ -139,7 +141,7 @@ namespace thh
   {
     values_.clear();
     keys_to_handles_.clear();
-    handles_to_keys.clear();
+    handles_to_keys_.clear();
   }
 
   template<typename Key, typename Value, typename Tag>

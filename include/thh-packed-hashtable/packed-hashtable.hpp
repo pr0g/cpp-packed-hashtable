@@ -46,8 +46,9 @@ namespace thh
     // key to handle mapping (key -> handle -> value)
     std::unordered_map<Key, typed_handle_t<Tag>> keys_to_handles_;
     // key to handle mapping (value -> handle -> key)
-    std::unordered_map<typed_handle_t<Tag>, Key, typed_handle_hash_t<Tag>>
-      handles_to_keys;
+    std::unordered_map<
+      typed_handle_t<Tag>, const Key*, typed_handle_hash_t<Tag>>
+      handles_to_keys_;
 
   public:
     using key_value_type = std::pair<const Key, Value>;
