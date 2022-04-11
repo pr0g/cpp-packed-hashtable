@@ -29,6 +29,10 @@ namespace thh
   {
   };
 
+  struct empty_t
+  {
+  };
+
   // alias for default packed hashtable handle if a custom tag is not used
   using packed_hashtable_handle_t = typed_handle_t<packed_hashtable_tag_t>;
 
@@ -38,17 +42,16 @@ namespace thh
   // accessible through an indirect handle as well as direct iteration)
   // keys are stored in an unordered_map and its values are the handles to the
   // underlying elements stored in the handle_vector_t
-  template<typename Key, typename Value, typename Tag = packed_hashtable_tag_t>
-  class packed_hashtable_t
+  template<
+    typename Key, typename Value, typename Tag = packed_hashtable_tag_t,
+    typename RemovalPolicy = empty_t>
+  class base_packed_hashtable_t
   {
+  protected:
     // store for underlying values
     handle_vector_t<Value, Tag> values_;
     // key to handle mapping (key -> handle -> value)
     std::unordered_map<Key, typed_handle_t<Tag>> keys_to_handles_;
-    // key to handle mapping (value -> handle -> key)
-    std::unordered_map<
-      typed_handle_t<Tag>, const Key*, typed_handle_hash_t<Tag>>
-      handles_to_keys_;
 
   public:
     using key_value_type = std::pair<const Key, Value>;
@@ -98,8 +101,6 @@ namespace thh
     // returns an interator following the last removed element (position must
     // be valid and dereferenceable)
     handle_iterator remove(handle_iterator position);
-    //
-    bool remove(typed_handle_t<Tag> handle);
     // returns if the container has an element with the equivalent key
     [[nodiscard]] bool has(const Key& key) const;
     //
@@ -186,10 +187,10 @@ namespace thh
     // for (auto handle : packed_hashtable.handle_iteration())
     class handle_iterator_wrapper_t
     {
-      packed_hashtable_t* pht_ = nullptr;
+      base_packed_hashtable_t* pht_ = nullptr;
 
     public:
-      handle_iterator_wrapper_t(packed_hashtable_t& pht);
+      handle_iterator_wrapper_t(base_packed_hashtable_t& pht);
       [[nodiscard]] auto begin() -> handle_iterator;
       [[nodiscard]] auto end() -> handle_iterator;
     };
@@ -199,10 +200,10 @@ namespace thh
     // for (auto handle : packed_hashtable.handle_iteration())
     class const_handle_iterator_wrapper_t
     {
-      const packed_hashtable_t* pht_ = nullptr;
+      const base_packed_hashtable_t* pht_ = nullptr;
 
     public:
-      const_handle_iterator_wrapper_t(const packed_hashtable_t& pht);
+      const_handle_iterator_wrapper_t(const base_packed_hashtable_t& pht);
       [[nodiscard]] auto begin() const -> const_handle_iterator;
       [[nodiscard]] auto cbegin() const -> const_handle_iterator;
       [[nodiscard]] auto end() const -> const_handle_iterator;
@@ -214,10 +215,10 @@ namespace thh
     // for (auto& value : packed_hashtable.value_iteration())
     class value_iterator_wrapper_t
     {
-      packed_hashtable_t* pht_ = nullptr;
+      base_packed_hashtable_t* pht_ = nullptr;
 
     public:
-      value_iterator_wrapper_t(packed_hashtable_t& pht);
+      value_iterator_wrapper_t(base_packed_hashtable_t& pht);
       [[nodiscard]] auto begin() -> value_iterator;
       [[nodiscard]] auto end() -> value_iterator;
     };
@@ -227,10 +228,10 @@ namespace thh
     // for (const auto& value : packed_hashtable.value_iteration())
     class const_value_iterator_wrapper_t
     {
-      const packed_hashtable_t* pht_ = nullptr;
+      const base_packed_hashtable_t* pht_ = nullptr;
 
     public:
-      const_value_iterator_wrapper_t(const packed_hashtable_t& pht);
+      const_value_iterator_wrapper_t(const base_packed_hashtable_t& pht);
       [[nodiscard]] auto begin() const -> const_value_iterator;
       [[nodiscard]] auto cbegin() const -> const_value_iterator;
       [[nodiscard]] auto end() const -> const_value_iterator;
@@ -260,6 +261,30 @@ namespace thh
     // add_or_update overloads
     template<typename P>
     std::pair<handle_iterator, bool> add_or_update_internal(P&& key_value);
+  };
+
+  template<typename Key, typename Value, typename Tag = packed_hashtable_tag_t>
+  class packed_hashtable_t
+    : public base_packed_hashtable_t<
+        Key, Value, Tag, packed_hashtable_t<Key, Value, Tag>>
+  {
+    friend class base_packed_hashtable_t<
+      Key, Value, Tag, packed_hashtable_t<Key, Value, Tag>>;
+
+    // key to handle mapping (value -> handle -> key)
+    std::unordered_map<
+      typed_handle_t<Tag>, const Key*, typed_handle_hash_t<Tag>>
+      handles_to_keys_;
+
+    void mapping(typed_handle_t<Tag> handle, const Key* key);
+    void remove_mapping(typed_handle_t<Tag> handle);
+    void clear_mapping();
+
+  public:
+    using base_packed_hashtable_t<
+      Key, Value, Tag, packed_hashtable_t<Key, Value, Tag>>::remove;
+    //
+    bool remove(typed_handle_t<Tag> handle);
   };
 } // namespace thh
 
