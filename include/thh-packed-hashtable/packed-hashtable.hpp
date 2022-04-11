@@ -286,6 +286,19 @@ namespace thh
     //
     bool remove(typed_handle_t<Tag> handle);
   };
+
+  template<typename Key, typename Value, typename Tag = packed_hashtable_tag_t>
+  class packed_hashtable_simple_t
+    : public base_packed_hashtable_t<
+        Key, Value, Tag, packed_hashtable_simple_t<Key, Value, Tag>>
+  {
+    friend class base_packed_hashtable_t<
+      Key, Value, Tag, packed_hashtable_simple_t<Key, Value, Tag>>;
+
+    void mapping(typed_handle_t<Tag>, const Key*) {}
+    void remove_mapping(typed_handle_t<Tag>) {}
+    void clear_mapping() {}
+  };
 } // namespace thh
 
 #include "packed-hashtable.inl"

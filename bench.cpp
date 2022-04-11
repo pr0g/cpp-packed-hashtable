@@ -115,9 +115,9 @@ static void iterate_packed_hashtable_values_example(benchmark::State& state)
   }
 }
 
-BENCHMARK(iterate_packed_hashtable_values_example)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
+// BENCHMARK(iterate_packed_hashtable_values_example)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
 
 static void iterate_unordered_map_values_example(benchmark::State& state)
 {
@@ -147,9 +147,9 @@ static void iterate_unordered_map_values_example(benchmark::State& state)
   }
 }
 
-BENCHMARK(iterate_unordered_map_values_example)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
+// BENCHMARK(iterate_unordered_map_values_example)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
 
 template<typename T>
 T random_between(T range_from, T range_to)
@@ -204,18 +204,19 @@ static void iterate_packed_hashtable_add_remove_handles_example(
   }
 }
 
-BENCHMARK(iterate_packed_hashtable_add_remove_handles_example)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
+// BENCHMARK(iterate_packed_hashtable_add_remove_handles_example)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
 
-void iterate_packed_hashtable_add_remove_values_example(
-  benchmark::State& state)
+void iterate_packed_hashtable_add_remove_values_example(benchmark::State& state)
 {
   thh::packed_hashtable_t<std::string, particle_t> packed_hashtable_particles;
   packed_hashtable_particles.reserve(static_cast<int32_t>(state.range(0)));
   for (int i = 0; i < state.range(0); ++i) {
+    auto particle = particle_t{};
+    particle.lifetime_ = i % 2 == 0 ? 1.0f : 0.0f;
     packed_hashtable_particles.add(
-      {std::string("name") + std::to_string(i), particle_t{}});
+      {std::string("name") + std::to_string(i), particle});
   }
 
   for ([[maybe_unused]] auto _ : state) {
@@ -230,6 +231,10 @@ void iterate_packed_hashtable_add_remove_values_example(
       });
   }
 }
+
+BENCHMARK(iterate_packed_hashtable_add_remove_values_example)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
 
 static void find_lookup(benchmark::State& state)
 {
@@ -249,7 +254,7 @@ static void find_lookup(benchmark::State& state)
   }
 }
 
-BENCHMARK(find_lookup)->RangeMultiplier(2)->Range(32, 8 << 13);
+// BENCHMARK(find_lookup)->RangeMultiplier(2)->Range(32, 8 << 13);
 
 static void find_map(benchmark::State& state)
 {
@@ -269,81 +274,81 @@ static void find_map(benchmark::State& state)
   }
 }
 
-BENCHMARK(find_map)->RangeMultiplier(2)->Range(32, 8 << 13);
+// BENCHMARK(find_map)->RangeMultiplier(2)->Range(32, 8 << 13);
 
-BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<32>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<64>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<128>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<256>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<512>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<1024>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<2048>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<4096>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<32>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<64>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<128>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<256>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<512>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<1024>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<2048>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<4096>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
 
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<32>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<64>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<128>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<256>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<512>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<1024>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<2048>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<4096>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<32>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<64>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<128>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<256>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<512>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<1024>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<2048>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<4096>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
 
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<32>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<64>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<128>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<256>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<512>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<1024>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<2048>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<4096>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<32>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<64>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<128>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<256>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<512>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<1024>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<2048>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
+// BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<4096>)
+//   ->RangeMultiplier(2)
+//   ->Range(32, 8 << 13);
 
 BENCHMARK_MAIN();

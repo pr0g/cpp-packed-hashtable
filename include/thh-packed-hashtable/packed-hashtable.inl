@@ -16,9 +16,7 @@ namespace thh
     const auto handle = values_.add(std::forward<Value>(key_value.second));
     const auto inserted = keys_to_handles_.insert(
       {std::forward<const Key>(key_value.first), handle});
-    // handles_to_keys_.insert({handle, &inserted.first->first});
-    RemovalPolicy& removal = static_cast<RemovalPolicy&>(*this);
-    removal.mapping(handle, &inserted.first->first);
+    static_cast<RemovalPolicy&>(*this).mapping(handle, &inserted.first->first);
     return inserted;
   }
 
@@ -41,9 +39,7 @@ namespace thh
     const auto handle = values_.add(std::forward<Value>(key_value.second));
     const auto inserted = keys_to_handles_.insert(
       {std::forward<const Key>(key_value.first), handle});
-    // handles_to_keys_.insert({handle, &inserted.first->first});
-    RemovalPolicy& removal = static_cast<RemovalPolicy&>(*this);
-    removal.mapping(handle, &inserted.first->first);
+    static_cast<RemovalPolicy&>(*this).mapping(handle, &inserted.first->first);
     return inserted;
   }
 
@@ -119,9 +115,7 @@ namespace thh
         position != keys_to_handles_.end()) {
       [[maybe_unused]] const auto removed = values_.remove(position->second);
       assert(removed);
-      // handles_to_keys_.erase(position->second);
-      RemovalPolicy& removal = static_cast<RemovalPolicy&>(*this);
-      removal.remove_mapping(position->second);
+      static_cast<RemovalPolicy&>(*this).remove_mapping(position->second);
       return keys_to_handles_.erase(position);
     }
     return keys_to_handles_.end();
@@ -135,9 +129,7 @@ namespace thh
   {
     [[maybe_unused]] const auto removed = values_.remove(position->second);
     assert(removed);
-    // handles_to_keys_.erase(position->second);
-    RemovalPolicy& removal = static_cast<RemovalPolicy&>(*this);
-    removal.remove_mapping(position->second);
+    static_cast<RemovalPolicy&>(*this).remove_mapping(position->second);
     return keys_to_handles_.erase(position);
   }
 
@@ -167,9 +159,7 @@ namespace thh
   {
     values_.clear();
     keys_to_handles_.clear();
-    // handles_to_keys_.clear();
-    RemovalPolicy& removal = static_cast<RemovalPolicy&>(*this);
-    removal.clear_mapping();
+    static_cast<RemovalPolicy&>(*this).clear_mapping();
   }
 
   template<typename Key, typename Value, typename Tag, typename RemovalPolicy>
@@ -535,11 +525,11 @@ namespace thh
   bool packed_hashtable_t<Key, Value, Tag>::remove(
     const typed_handle_t<Tag> handle)
   {
-    if (const auto removed = this->values_.remove(handle)) {
-      if (const auto key = handles_to_keys_.find(handle);
-          key != handles_to_keys_.end()) {
-        handles_to_keys_.erase(key);
-        return this->keys_to_handles_.erase(*key->second) != 0;
+    if (this->values_.remove(handle)) {
+      if (const auto handle_key = handles_to_keys_.find(handle);
+          handle_key != handles_to_keys_.end()) {
+        handles_to_keys_.erase(handle_key);
+        return this->keys_to_handles_.erase(*handle_key->second) != 0;
       }
     }
     return false;
