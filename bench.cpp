@@ -160,8 +160,7 @@ T random_between(T range_from, T range_to)
   return distr(generator);
 }
 
-static void iterate_packed_hashtable_add_remove_handles_example(
-  benchmark::State& state)
+static void iterate_packed_hashtable_handles_example(benchmark::State& state)
 {
   // char(*__kaboom)[sizeof(particle_t)] = 1;
 
@@ -204,11 +203,45 @@ static void iterate_packed_hashtable_add_remove_handles_example(
   }
 }
 
-// BENCHMARK(iterate_packed_hashtable_add_remove_handles_example)
+// BENCHMARK(iterate_packed_hashtable_handles_example)
 //   ->RangeMultiplier(2)
 //   ->Range(32, 8 << 13);
 
 void iterate_packed_hashtable_add_remove_values_example(benchmark::State& state)
+{
+  thh::packed_hashtable_rl_t<std::string, particle_t>
+    packed_hashtable_particles;
+  packed_hashtable_particles.reserve(static_cast<int32_t>(state.range(0)));
+  for (int i = 0; i < state.range(0); ++i) {
+    auto particle = particle_t{};
+    particle.lifetime_ = i % 2 == 0 ? 1.0f : 0.0f;
+    packed_hashtable_particles.add(
+      {std::string("name") + std::to_string(i), particle});
+  }
+
+  for ([[maybe_unused]] auto _ : state) {
+    for (auto it = packed_hashtable_particles.vbegin();
+         it != packed_hashtable_particles.vend();) {
+      const auto& value = *it;
+      if (value.lifetime_ <= 0.0f) {
+        const auto handle =
+          packed_hashtable_particles.handle_from_index(static_cast<int32_t>(
+            std::distance(packed_hashtable_particles.vbegin(), it)));
+        packed_hashtable_particles.remove(handle);
+      } else {
+        it++;
+      }
+    }
+    benchmark::DoNotOptimize(packed_hashtable_particles);
+  }
+}
+
+BENCHMARK(iterate_packed_hashtable_add_remove_values_example)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+
+void iterate_packed_hashtable_add_remove_handles_example(
+  benchmark::State& state)
 {
   thh::packed_hashtable_t<std::string, particle_t> packed_hashtable_particles;
   packed_hashtable_particles.reserve(static_cast<int32_t>(state.range(0)));
@@ -220,19 +253,22 @@ void iterate_packed_hashtable_add_remove_values_example(benchmark::State& state)
   }
 
   for ([[maybe_unused]] auto _ : state) {
-    std::for_each(
-      packed_hashtable_particles.vbegin(), packed_hashtable_particles.vend(),
-      [&packed_hashtable_particles, index = 0](const auto& value) mutable {
-        if (value.lifetime_ <= 0.0f) {
-          auto handle = packed_hashtable_particles.handle_from_index(index);
-          packed_hashtable_particles.remove(handle);
-          index++;
-        }
-      });
+    for (auto it = packed_hashtable_particles.hbegin();
+         it != packed_hashtable_particles.hend();) {
+      packed_hashtable_particles.call(
+        it->second, [&packed_hashtable_particles, &it](const auto& value) {
+          if (value.lifetime_ <= 0.0f) {
+            it = packed_hashtable_particles.remove(it);
+          } else {
+            ++it;
+          }
+        });
+    }
+    benchmark::DoNotOptimize(packed_hashtable_particles);
   }
 }
 
-BENCHMARK(iterate_packed_hashtable_add_remove_values_example)
+BENCHMARK(iterate_packed_hashtable_add_remove_handles_example)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 

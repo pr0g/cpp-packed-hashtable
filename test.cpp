@@ -482,9 +482,9 @@ struct particle_t
 
 TEST_CASE("test skipping")
 {
-  thh::packed_hashtable_t<std::string, particle_t> packed_hashtable_particles;
-  thh::packed_hashtable_simple_t<std::string, particle_t>
-    packed_hashtable_particles_simple;
+  thh::packed_hashtable_rl_t<std::string, particle_t>
+    packed_hashtable_particles;
+  // thh::packed_hashtable_t<std::string, particle_t> packed_hashtable_particles;
 
   // const char(
   //   *find_size_1)[sizeof(thh::packed_hashtable_t<std::string, particle_t>)] =
@@ -507,7 +507,7 @@ TEST_CASE("test skipping")
        it != packed_hashtable_particles.vend();) {
     const auto& value = *it;
     if (value.lifetime_ <= 0.0f) {
-      auto handle =
+      const auto handle =
         packed_hashtable_particles.handle_from_index(static_cast<int32_t>(
           std::distance(packed_hashtable_particles.vbegin(), it)));
       packed_hashtable_particles.remove(handle);

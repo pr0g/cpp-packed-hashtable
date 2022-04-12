@@ -5,31 +5,27 @@
 
 namespace thh
 {
-  template<class T>
-  inline void hash_combine(std::size_t& seed, const T& v)
-  {
-    std::hash<T> hasher;
-    seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-  }
-
   template<typename Tag>
   struct typed_handle_hash_t
   {
     std::size_t operator()(const typed_handle_t<Tag>& handle) const
     {
+      const auto hash_combine_fn = [](std::size_t& seed, const auto& v) {
+        std::hash<typename std::remove_const_t<
+          typename std::remove_reference_t<decltype(v)>>>
+          hasher;
+        seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+      };
+
       std::size_t seed = 0;
-      hash_combine(seed, handle.gen_);
-      hash_combine(seed, handle.id_);
+      hash_combine_fn(seed, handle.gen_);
+      hash_combine_fn(seed, handle.id_);
       return seed;
     }
   };
 
   // default tag for packed_hashtable handles
   struct packed_hashtable_tag_t
-  {
-  };
-
-  struct empty_t
   {
   };
 
@@ -44,7 +40,7 @@ namespace thh
   // underlying elements stored in the handle_vector_t
   template<
     typename Key, typename Value, typename Tag = packed_hashtable_tag_t,
-    typename RemovalPolicy = empty_t>
+    typename RemovalPolicy = struct empty_t>
   class base_packed_hashtable_t
   {
   protected:
@@ -271,6 +267,19 @@ namespace thh
     friend class base_packed_hashtable_t<
       Key, Value, Tag, packed_hashtable_t<Key, Value, Tag>>;
 
+    void mapping(typed_handle_t<Tag>, const Key*) {}
+    void remove_mapping(typed_handle_t<Tag>) {}
+    void clear_mapping() {}
+  };
+
+  template<typename Key, typename Value, typename Tag = packed_hashtable_tag_t>
+  class packed_hashtable_rl_t
+    : public base_packed_hashtable_t<
+        Key, Value, Tag, packed_hashtable_rl_t<Key, Value, Tag>>
+  {
+    friend class base_packed_hashtable_t<
+      Key, Value, Tag, packed_hashtable_rl_t<Key, Value, Tag>>;
+
     // key to handle mapping (value -> handle -> key)
     std::unordered_map<
       typed_handle_t<Tag>, const Key*, typed_handle_hash_t<Tag>>
@@ -282,22 +291,9 @@ namespace thh
 
   public:
     using base_packed_hashtable_t<
-      Key, Value, Tag, packed_hashtable_t<Key, Value, Tag>>::remove;
+      Key, Value, Tag, packed_hashtable_rl_t<Key, Value, Tag>>::remove;
     //
     bool remove(typed_handle_t<Tag> handle);
-  };
-
-  template<typename Key, typename Value, typename Tag = packed_hashtable_tag_t>
-  class packed_hashtable_simple_t
-    : public base_packed_hashtable_t<
-        Key, Value, Tag, packed_hashtable_simple_t<Key, Value, Tag>>
-  {
-    friend class base_packed_hashtable_t<
-      Key, Value, Tag, packed_hashtable_simple_t<Key, Value, Tag>>;
-
-    void mapping(typed_handle_t<Tag>, const Key*) {}
-    void remove_mapping(typed_handle_t<Tag>) {}
-    void clear_mapping() {}
   };
 } // namespace thh
 

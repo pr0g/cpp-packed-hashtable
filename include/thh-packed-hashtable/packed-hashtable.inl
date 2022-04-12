@@ -502,27 +502,27 @@ namespace thh
   }
 
   template<typename Key, typename Value, typename Tag>
-  void packed_hashtable_t<Key, Value, Tag>::mapping(
+  void packed_hashtable_rl_t<Key, Value, Tag>::mapping(
     const typed_handle_t<Tag> handle, const Key* key)
   {
     handles_to_keys_.insert({handle, key});
   }
 
   template<typename Key, typename Value, typename Tag>
-  void packed_hashtable_t<Key, Value, Tag>::remove_mapping(
+  void packed_hashtable_rl_t<Key, Value, Tag>::remove_mapping(
     typed_handle_t<Tag> handle)
   {
     handles_to_keys_.erase(handle);
   }
 
   template<typename Key, typename Value, typename Tag>
-  void packed_hashtable_t<Key, Value, Tag>::clear_mapping()
+  void packed_hashtable_rl_t<Key, Value, Tag>::clear_mapping()
   {
     handles_to_keys_.clear();
   }
 
   template<typename Key, typename Value, typename Tag>
-  bool packed_hashtable_t<Key, Value, Tag>::remove(
+  bool packed_hashtable_rl_t<Key, Value, Tag>::remove(
     const typed_handle_t<Tag> handle)
   {
     if (this->values_.remove(handle)) {
