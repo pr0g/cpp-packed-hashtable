@@ -16,7 +16,7 @@ namespace thh
     const auto handle = values_.add(std::forward<Value>(key_value.second));
     const auto inserted = keys_to_handles_.insert(
       {std::forward<const Key>(key_value.first), handle});
-    static_cast<RemovalPolicy&>(*this).mapping(handle, &inserted.first->first);
+    static_cast<RemovalPolicy&>(*this).add_mapping(handle, &inserted.first->first);
     return inserted;
   }
 
@@ -39,7 +39,7 @@ namespace thh
     const auto handle = values_.add(std::forward<Value>(key_value.second));
     const auto inserted = keys_to_handles_.insert(
       {std::forward<const Key>(key_value.first), handle});
-    static_cast<RemovalPolicy&>(*this).mapping(handle, &inserted.first->first);
+    static_cast<RemovalPolicy&>(*this).add_mapping(handle, &inserted.first->first);
     return inserted;
   }
 
@@ -159,7 +159,7 @@ namespace thh
   {
     values_.clear();
     keys_to_handles_.clear();
-    static_cast<RemovalPolicy&>(*this).clear_mapping();
+    static_cast<RemovalPolicy&>(*this).clear_mappings();
   }
 
   template<typename Key, typename Value, typename Tag, typename RemovalPolicy>
@@ -502,7 +502,7 @@ namespace thh
   }
 
   template<typename Key, typename Value, typename Tag>
-  void packed_hashtable_rl_t<Key, Value, Tag>::mapping(
+  void packed_hashtable_rl_t<Key, Value, Tag>::add_mapping(
     const typed_handle_t<Tag> handle, const Key* key)
   {
     handles_to_keys_.insert({handle, key});
@@ -516,7 +516,7 @@ namespace thh
   }
 
   template<typename Key, typename Value, typename Tag>
-  void packed_hashtable_rl_t<Key, Value, Tag>::clear_mapping()
+  void packed_hashtable_rl_t<Key, Value, Tag>::clear_mappings()
   {
     handles_to_keys_.clear();
   }

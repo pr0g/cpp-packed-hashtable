@@ -5,11 +5,15 @@
 
 namespace thh
 {
+  // hash function implementation for typed_handle_t
   template<typename Tag>
   struct typed_handle_hash_t
   {
     std::size_t operator()(const typed_handle_t<Tag>& handle) const
     {
+      // based on boost hash combine function
+      // ref:
+      // boost.org/doc/libs/1_55_0/doc/html/hash/reference.html#boost.hash_combine
       const auto hash_combine_fn = [](std::size_t& seed, const auto& v) {
         std::hash<typename std::remove_const_t<
           typename std::remove_reference_t<decltype(v)>>>
@@ -32,12 +36,12 @@ namespace thh
   // alias for default packed hashtable handle if a custom tag is not used
   using packed_hashtable_handle_t = typed_handle_t<packed_hashtable_tag_t>;
 
-  // hybrid lookup container for efficient element iteration at the cost of
-  // additional memory usage
+  // base type for hybrid lookup container for efficient element iteration at
+  // the cost of additional memory usage
   // values are stored in a handle_vector_t (elements are tightly packed and are
-  // accessible through an indirect handle as well as direct iteration)
-  // keys are stored in an unordered_map and its values are the handles to the
-  // underlying elements stored in the handle_vector_t
+  // accessible through an indirect handle as well as direct iteration) keys are
+  // stored in an unordered_map and its values are the handles to the underlying
+  // elements stored in the handle_vector_t
   template<
     typename Key, typename Value, typename Tag = packed_hashtable_tag_t,
     typename RemovalPolicy = struct empty_t>
@@ -99,7 +103,8 @@ namespace thh
     handle_iterator remove(handle_iterator position);
     // returns if the container has an element with the equivalent key
     [[nodiscard]] bool has(const Key& key) const;
-    //
+    // returns the handle for a value at a given index
+    // note: will return an invalid handle if the index is out of range
     [[nodiscard]] typed_handle_t<Tag> handle_from_index(int32_t index);
     // returns the number of available handles (includes element storage that is
     // reserved but not yet in use)
@@ -259,6 +264,8 @@ namespace thh
     std::pair<handle_iterator, bool> add_or_update_internal(P&& key_value);
   };
 
+  // packed_hashtable_t - a hybrid lookup container for efficient element
+  // iteration at the cost of additional memory usage
   template<typename Key, typename Value, typename Tag = packed_hashtable_tag_t>
   class packed_hashtable_t
     : public base_packed_hashtable_t<
@@ -267,11 +274,18 @@ namespace thh
     friend class base_packed_hashtable_t<
       Key, Value, Tag, packed_hashtable_t<Key, Value, Tag>>;
 
-    void mapping(typed_handle_t<Tag>, const Key*) {}
+    // empty noop functions, unused in packed_hashtable_t
+    void add_mapping(typed_handle_t<Tag>, const Key*) {}
     void remove_mapping(typed_handle_t<Tag>) {}
-    void clear_mapping() {}
+    void clear_mappings() {}
   };
 
+  // hybrid lookup container for efficient element iteration at the cost of
+  // additional memory usage
+  // packed_hashtable_rl_t - rl signifies 'reverse lookup', this variant of
+  // packed_hashtable_t contains an additional mapping from handles to keys,
+  // this can be used to go from a value (while iterating) to a handle and then
+  // to a key to fully remove the element from the container
   template<typename Key, typename Value, typename Tag = packed_hashtable_tag_t>
   class packed_hashtable_rl_t
     : public base_packed_hashtable_t<
@@ -285,14 +299,19 @@ namespace thh
       typed_handle_t<Tag>, const Key*, typed_handle_hash_t<Tag>>
       handles_to_keys_;
 
-    void mapping(typed_handle_t<Tag> handle, const Key* key);
+    // adds a mapping from a handle to a key
+    void add_mapping(typed_handle_t<Tag> handle, const Key* key);
+    // remove the mapping from handle to key
     void remove_mapping(typed_handle_t<Tag> handle);
-    void clear_mapping();
+    // clear all handle to key mappings from the container
+    void clear_mappings();
 
   public:
+    // bring base remove function into scope
     using base_packed_hashtable_t<
       Key, Value, Tag, packed_hashtable_rl_t<Key, Value, Tag>>::remove;
-    //
+
+    // removes the element with equivalent handle
     bool remove(typed_handle_t<Tag> handle);
   };
 } // namespace thh
