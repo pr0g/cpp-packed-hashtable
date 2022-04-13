@@ -39,6 +39,7 @@ void run_memory_tracking()
   const std::string vector_name =
     "std::vector - elem size: "s + std::to_string(Size);
   std::cout << vector_name << '\n' << underline_fn(vector_name.size()) << '\n';
+  g_total = 0;
   for (const int size : sizes) {
     std::vector<object_t> vec;
     vec.reserve(size);
@@ -56,6 +57,7 @@ void run_memory_tracking()
     "std::unordered_map - elem size: "s + std::to_string(Size);
   std::cout << unordered_map_name << '\n'
             << underline_fn(unordered_map_name.size()) << '\n';
+  g_total = 0;
   for (const int size : sizes) {
     std::unordered_map<std::string, object_t> map;
     map.reserve(size);
@@ -71,6 +73,7 @@ void run_memory_tracking()
 
   const std::string map_name = "std::map - elem size: "s + std::to_string(Size);
   std::cout << map_name << '\n' << underline_fn(map_name.size()) << '\n';
+  g_total = 0;
   for (const int size : sizes) {
     std::map<std::string, object_t> map;
     for (int i = 0; i < size; ++i) {
@@ -90,6 +93,7 @@ void run_memory_tracking()
     "thh::handle_vector_t - elem size: "s + std::to_string(Size);
   std::cout << handle_vector_name << '\n'
             << underline_fn(handle_vector_name.size()) << '\n';
+  g_total = 0;
   for (const int size : sizes) {
     thh::handle_vector_t<object_t> handle;
     handle.reserve(size);
@@ -107,6 +111,7 @@ void run_memory_tracking()
     "thh::packed_hashtable_t - elem size: " + std::to_string(Size);
   std::cout << packed_hashtable_name << '\n'
             << underline_fn(packed_hashtable_name.size()) << '\n';
+  g_total = 0;
   for (const int size : sizes) {
     thh::packed_hashtable_t<std::string, object_t> packed_hashtable;
     packed_hashtable.reserve(size);
@@ -124,6 +129,7 @@ void run_memory_tracking()
     "thh::packed_hashtable_rl_t - elem size: "s + std::to_string(Size);
   std::cout << packed_hashtable_rl_name << '\n'
             << underline_fn(packed_hashtable_rl_name.size()) << '\n';
+  g_total = 0;
   for (const int size : sizes) {
     thh::packed_hashtable_rl_t<std::string, object_t> packed_hashtable_rl;
     packed_hashtable_rl.reserve(size);
