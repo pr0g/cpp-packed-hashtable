@@ -536,4 +536,24 @@ namespace thh
     }
     return false;
   }
+
+  template<typename Key, typename Value, typename Tag, typename Pred>
+  int32_t remove_when(
+    packed_hashtable_rl_t<Key, Value, Tag>& packed_hashtable_rl,
+    const Pred pred)
+  {
+    auto old_size = packed_hashtable_rl.size();
+    for (auto it = packed_hashtable_rl.vbegin();
+         it != packed_hashtable_rl.vend();) {
+      if (pred(*it)) {
+        const auto handle =
+          packed_hashtable_rl.handle_from_index(static_cast<int32_t>(
+            std::distance(packed_hashtable_rl.vbegin(), it)));
+        packed_hashtable_rl.remove(handle);
+      } else {
+        ++it;
+      }
+    }
+    return old_size - packed_hashtable_rl.size();
+  }
 } // namespace thh
