@@ -460,68 +460,19 @@ TEST_CASE("Container call return with handle produces expected value")
   CHECK(three_expected == std::string("three"));
 }
 
-struct vec3_t
+TEST_CASE("Elements that satisfy predicate are removed")
 {
-  float x, y, z;
-};
+  thh::packed_hashtable_rl_t<std::string, float> packed_hashtable;
 
-struct color_t
-{
-  float r, g, b, a;
-};
-
-// 48 bytes
-struct particle_t
-{
-  vec3_t position_;
-  vec3_t velocity_;
-  color_t color_;
-  float size_;
-  float lifetime_;
-};
-
-TEST_CASE("test skipping")
-{
-  thh::packed_hashtable_rl_t<std::string, particle_t>
-    packed_hashtable_particles;
-  // thh::packed_hashtable_t<std::string, particle_t>
-  // packed_hashtable_particles;
-
-  // const char(
-  //   *find_size_1)[sizeof(thh::packed_hashtable_t<std::string, particle_t>)] =
-  //   1;
-  // const char(*find_size_2)[sizeof(
-  //   thh::packed_hashtable_simple_t<std::string, particle_t>)] = 1;
-
-  packed_hashtable_particles.reserve(static_cast<int32_t>(64));
-  for (int i = 0; i < 64; ++i) {
-    auto particle = particle_t{};
-    particle.lifetime_ = i % 2 == 0 ? 1.0f : 0.0f;
-    packed_hashtable_particles.add(
-      {std::string("name") + std::to_string(i), particle});
+  constexpr int element_count = 64;
+  packed_hashtable.reserve(static_cast<int32_t>(element_count));
+  for (int i = 0; i < element_count; ++i) {
+    auto lifetime = i % 2 == 0 ? 1.0f : 0.0f;
+    packed_hashtable.add({std::string("name") + std::to_string(i), lifetime});
   }
 
-  // std::for_each(
-  // packed_hashtable_particles.vbegin(), packed_hashtable_particles.vend(),
-  // [&packed_hashtable_particles, index = 0](const auto& value) mutable {
-  // for (auto it = packed_hashtable_particles.vbegin();
-  //      it != packed_hashtable_particles.vend();) {
-  //   const auto& value = *it;
-  //   if (value.lifetime_ <= 0.0f) {
-  //     const auto handle =
-  //       packed_hashtable_particles.handle_from_index(static_cast<int32_t>(
-  //         std::distance(packed_hashtable_particles.vbegin(), it)));
-  //     packed_hashtable_particles.remove(handle);
-  //     // index++;
-  //   } else {
-  //     it++;
-  //   }
-  // }
-  // });
+  thh::remove_when(
+    packed_hashtable, [](const auto& lifetime) { return lifetime <= 0.0f; });
 
-  thh::remove_when(packed_hashtable_particles, [](const auto& value) {
-    return value.lifetime_ <= 0.0f;
-  });
-
-  MESSAGE(packed_hashtable_particles.size());
+  CHECK(packed_hashtable.size() == element_count / 2);
 }
