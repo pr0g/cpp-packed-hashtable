@@ -16,7 +16,8 @@ namespace thh
     const auto handle = values_.add(std::forward<Value>(key_value.second));
     const auto inserted = keys_to_handles_.insert(
       {std::forward<const Key>(key_value.first), handle});
-    static_cast<RemovalPolicy&>(*this).add_mapping(handle, &inserted.first->first);
+    static_cast<RemovalPolicy&>(*this).add_mapping(
+      handle, &inserted.first->first);
     return inserted;
   }
 
@@ -39,7 +40,8 @@ namespace thh
     const auto handle = values_.add(std::forward<Value>(key_value.second));
     const auto inserted = keys_to_handles_.insert(
       {std::forward<const Key>(key_value.first), handle});
-    static_cast<RemovalPolicy&>(*this).add_mapping(handle, &inserted.first->first);
+    static_cast<RemovalPolicy&>(*this).add_mapping(
+      handle, &inserted.first->first);
     return inserted;
   }
 
@@ -141,8 +143,8 @@ namespace thh
   }
 
   template<typename Key, typename Value, typename Tag, typename RemovalPolicy>
-  typed_handle_t<Tag> base_packed_hashtable_t<
-    Key, Value, Tag, RemovalPolicy>::handle_from_index(const int32_t index)
+  typed_handle_t<Tag> base_packed_hashtable_t<Key, Value, Tag, RemovalPolicy>::
+    handle_from_index(const int32_t index) const
   {
     return values_.handle_from_index(index);
   }

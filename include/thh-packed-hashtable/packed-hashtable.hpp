@@ -105,7 +105,7 @@ namespace thh
     [[nodiscard]] bool has(const Key& key) const;
     // returns the handle for a value at a given index
     // note: will return an invalid handle if the index is out of range
-    [[nodiscard]] typed_handle_t<Tag> handle_from_index(int32_t index);
+    [[nodiscard]] typed_handle_t<Tag> handle_from_index(int32_t index) const;
     // returns the number of available handles (includes element storage that is
     // reserved but not yet in use)
     // the capacity refers to the values underlying storage, not the key-handle
