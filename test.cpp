@@ -3,6 +3,8 @@
 
 #include <thh-packed-hashtable/packed-hashtable.hpp>
 
+#include <array>
+
 TEST_CASE("Can allocate packed hashtable")
 {
   thh::packed_hashtable_t<char, char> packed_hashtable;
@@ -341,26 +343,52 @@ TEST_CASE("Container does not have key that wasn't added")
   CHECK(!packed_hashtable.has(6));
 }
 
-TEST_CASE("looping")
+TEST_CASE("Iterate over all added handles")
 {
   thh::packed_hashtable_t<int, std::string> packed_hashtable;
-  packed_hashtable.add({1, "one"});
-  packed_hashtable.add({2, "two"});
-  packed_hashtable.add({3, "three"});
+  auto handle_it_1 = packed_hashtable.add({1, "one"});
+  auto handle_it_2 = packed_hashtable.add({2, "two"});
+  auto handle_it_3 = packed_hashtable.add({3, "three"});
+
+  const std::array expected_handle_its = {
+    handle_it_1, handle_it_2, handle_it_3};
+
+  CHECK(packed_hashtable.size() == 3);
 
   for ([[maybe_unused]] auto& h : packed_hashtable.handle_iteration()) {
-    // MESSAGE(h.first);
-    // MESSAGE(h.second.gen_, h.second.id_);
+    const auto found = std::find_if(
+      expected_handle_its.begin(), expected_handle_its.end(),
+      [h](const auto handle) { return handle.first->second == h.second; });
+    CHECK(found);
   }
+}
+
+TEST_CASE("Iterate over all added values")
+{
+  using std::string_literals::operator""s;
+  thh::packed_hashtable_t<int, std::string> packed_hashtable;
+  packed_hashtable.add({1, "one"s});
+  packed_hashtable.add({2, "two"s});
+  packed_hashtable.add({3, "three"s});
+
+  const std::array<std::pair<int, std::string>, 3> expected_key_values = {
+    std::pair{1, "one"s}, {2, "two"s}, {3, "three"s}};
+
+  CHECK(packed_hashtable.size() == 3);
 
   for ([[maybe_unused]] const auto& v :
        std::as_const(packed_hashtable).value_iteration()) {
-    // MESSAGE(v);
+    const auto found = std::find_if(
+      expected_key_values.begin(), expected_key_values.end(),
+      [v](const auto key_value) { return key_value.second == v; });
+    CHECK(found);
   }
 
   for ([[maybe_unused]] auto& v : packed_hashtable.value_iteration()) {
-    // v += std::string("-again");
-    // MESSAGE(v);
+    const auto found = std::find_if(
+      expected_key_values.begin(), expected_key_values.end(),
+      [v](const auto key_value) { return key_value.second == v; });
+    CHECK(found);
   }
 }
 
