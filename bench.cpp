@@ -222,9 +222,52 @@ BENCHMARK(iterate_unordered_map_values_particles)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
+static void packed_hashtable_add_particles(benchmark::State& state)
+{
+  thh::packed_hashtable_t<int64_t, particle_t> packed_hashtable_particles;
+  packed_hashtable_particles.reserve(static_cast<int32_t>(state.range(0)));
+  for ([[maybe_unused]] auto _ : state) {
+    for (int i = 0; i < state.range(0); ++i) {
+      packed_hashtable_particles.add({i, particle_t{}});
+    }
+  }
+}
+
+BENCHMARK(packed_hashtable_add_particles)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+
+static void packed_hashtable_rl_add_particles(benchmark::State& state)
+{
+  thh::packed_hashtable_rl_t<int64_t, particle_t> packed_hashtable_particles;
+  packed_hashtable_particles.reserve(static_cast<int32_t>(state.range(0)));
+  for ([[maybe_unused]] auto _ : state) {
+    for (int i = 0; i < state.range(0); ++i) {
+      packed_hashtable_particles.add({i, particle_t{}});
+    }
+  }
+}
+
+BENCHMARK(packed_hashtable_rl_add_particles)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+
+static void unordered_map_add_particles(benchmark::State& state)
+{
+  std::unordered_map<int64_t, particle_t> map_particles;
+  map_particles.reserve(state.range(0));
+  for ([[maybe_unused]] auto _ : state) {
+    for (int i = 0; i < state.range(0); ++i) {
+      map_particles.insert({i, particle_t{}});
+    }
+  }
+}
+
+BENCHMARK(unordered_map_add_particles)->RangeMultiplier(2)->Range(32, 8 << 13);
+
 // remove elements passing a predicate from the packed hashtable using value
 // iteration (note: uses reverse lookup - packed_hashtable_rl_t)
-static void iterate_packed_hashtable_add_remove_values_particles(
+static void iterate_packed_hashtable_remove_values_particles(
   benchmark::State& state)
 {
   thh::packed_hashtable_rl_t<std::string, particle_t>
@@ -245,13 +288,13 @@ static void iterate_packed_hashtable_add_remove_values_particles(
   }
 }
 
-BENCHMARK(iterate_packed_hashtable_add_remove_values_particles)
+BENCHMARK(iterate_packed_hashtable_remove_values_particles)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
 // remove elements passing a predicate from the packed hashtable using handle
 // iteration (note: does not use reverse lookup - packed_hashtable_t)
-static void iterate_packed_hashtable_add_remove_handles_particles(
+static void iterate_packed_hashtable_remove_handles_particles(
   benchmark::State& state)
 {
   thh::packed_hashtable_t<std::string, particle_t> packed_hashtable_particles;
@@ -271,13 +314,13 @@ static void iterate_packed_hashtable_add_remove_handles_particles(
   }
 }
 
-BENCHMARK(iterate_packed_hashtable_add_remove_handles_particles)
+BENCHMARK(iterate_packed_hashtable_remove_handles_particles)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
 // remove elements passing a predicate from an unordered map using key/value
 // iteration
-static void iterate_unordered_map_add_remove_particles(benchmark::State& state)
+static void iterate_unordered_map_remove_particles(benchmark::State& state)
 {
   std::unordered_map<std::string, particle_t> unordered_map_particles;
   unordered_map_particles.reserve(static_cast<int32_t>(state.range(0)));
@@ -296,7 +339,7 @@ static void iterate_unordered_map_add_remove_particles(benchmark::State& state)
   }
 }
 
-BENCHMARK(iterate_unordered_map_add_remove_particles)
+BENCHMARK(iterate_unordered_map_remove_particles)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
