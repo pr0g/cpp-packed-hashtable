@@ -190,7 +190,7 @@ BENCHMARK(iterate_packed_hashtable_handles_particles)
 
 // iterate the unordered_map using key/value iteration, modifying every member
 // of the element for each iteration
-static void iterate_unordered_map_values_particles(benchmark::State& state)
+static void iterate_unordered_map_particles(benchmark::State& state)
 {
   std::unordered_map<std::string, particle_t> map_particles;
   map_particles.reserve(state.range(0));
@@ -218,7 +218,7 @@ static void iterate_unordered_map_values_particles(benchmark::State& state)
   }
 }
 
-BENCHMARK(iterate_unordered_map_values_particles)
+BENCHMARK(iterate_unordered_map_particles)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
