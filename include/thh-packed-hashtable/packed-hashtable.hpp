@@ -317,8 +317,13 @@ namespace thh
 
   // removes all elements that pass the given predicate from the container
   template<typename Key, typename Value, typename Tag, typename Pred>
-  inline int32_t remove_when(
+  int32_t remove_when(
     packed_hashtable_rl_t<Key, Value, Tag>& packed_hashtable_rl, Pred pred);
+
+  // removes all elements that pass the given predicate from the container
+  template<typename Key, typename Value, typename Tag, typename Pred>
+  int32_t remove_when(
+    packed_hashtable_t<Key, Value, Tag>& packed_hashtable, Pred pred);
 } // namespace thh
 
 #include "packed-hashtable.inl"

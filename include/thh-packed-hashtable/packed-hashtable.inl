@@ -556,4 +556,22 @@ namespace thh
     }
     return old_size - packed_hashtable_rl.size();
   }
+
+  template<typename Key, typename Value, typename Tag, typename Pred>
+  int32_t remove_when(
+    packed_hashtable_t<Key, Value, Tag>& packed_hashtable, Pred pred)
+  {
+    const auto old_size = packed_hashtable.size();
+    for (auto it = packed_hashtable.hbegin(), last = packed_hashtable.hend();
+         it != last;) {
+      if (const auto result = packed_hashtable.call_return(
+            it->second, [&pred](const auto& value) { return pred(value); });
+          result.has_value() && result.value()) {
+        it = packed_hashtable.remove(it);
+      } else {
+        ++it;
+      }
+    }
+    return old_size - packed_hashtable.size();
+  }
 } // namespace thh

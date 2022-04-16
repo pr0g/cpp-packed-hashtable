@@ -162,8 +162,6 @@ T random_between(T range_from, T range_to)
 
 static void iterate_packed_hashtable_handles_example(benchmark::State& state)
 {
-  // char(*__kaboom)[sizeof(particle_t)] = 1;
-
   thh::packed_hashtable_t<std::string, particle_t> packed_hashtable_particles;
   packed_hashtable_particles.reserve(static_cast<int32_t>(state.range(0)));
   for (int i = 0; i < state.range(0); ++i) {
@@ -220,18 +218,9 @@ void iterate_packed_hashtable_add_remove_values_example(benchmark::State& state)
   }
 
   for ([[maybe_unused]] auto _ : state) {
-    for (auto it = packed_hashtable_particles.vbegin();
-         it != packed_hashtable_particles.vend();) {
-      const auto& value = *it;
-      if (value.lifetime_ <= 0.0f) {
-        const auto handle =
-          packed_hashtable_particles.handle_from_index(static_cast<int32_t>(
-            std::distance(packed_hashtable_particles.vbegin(), it)));
-        packed_hashtable_particles.remove(handle);
-      } else {
-        it++;
-      }
-    }
+    thh::remove_when(packed_hashtable_particles, [](const auto& value) {
+      return value.lifetime_ <= 0.0f;
+    });
     benchmark::DoNotOptimize(packed_hashtable_particles);
   }
 }
@@ -253,22 +242,54 @@ void iterate_packed_hashtable_add_remove_handles_example(
   }
 
   for ([[maybe_unused]] auto _ : state) {
-    for (auto it = packed_hashtable_particles.hbegin();
-         it != packed_hashtable_particles.hend();) {
-      packed_hashtable_particles.call(
-        it->second, [&packed_hashtable_particles, &it](const auto& value) {
-          if (value.lifetime_ <= 0.0f) {
-            it = packed_hashtable_particles.remove(it);
-          } else {
-            ++it;
-          }
-        });
-    }
+    thh::remove_when(packed_hashtable_particles, [](const auto& value) {
+      return value.lifetime_ <= 0.0f;
+    });
     benchmark::DoNotOptimize(packed_hashtable_particles);
   }
 }
 
 BENCHMARK(iterate_packed_hashtable_add_remove_handles_example)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+
+// c++20 erase_if stand-in
+template<
+  class Key, class T, class Hash, class KeyEqual, class Alloc, class Pred>
+typename std::unordered_map<Key, T, Hash, KeyEqual, Alloc>::size_type erase_if(
+  std::unordered_map<Key, T, Hash, KeyEqual, Alloc>& c, Pred pred)
+{
+  auto old_size = c.size();
+  for (auto i = c.begin(), last = c.end(); i != last;) {
+    if (pred(*i)) {
+      i = c.erase(i);
+    } else {
+      ++i;
+    }
+  }
+  return old_size - c.size();
+}
+
+void iterate_unordered_map_add_remove_example(benchmark::State& state)
+{
+  std::unordered_map<std::string, particle_t> unordered_map_particles;
+  unordered_map_particles.reserve(static_cast<int32_t>(state.range(0)));
+  for (int i = 0; i < state.range(0); ++i) {
+    auto particle = particle_t{};
+    particle.lifetime_ = i % 2 == 0 ? 1.0f : 0.0f;
+    unordered_map_particles.insert(
+      {std::string("name") + std::to_string(i), particle});
+  }
+
+  for ([[maybe_unused]] auto _ : state) {
+    erase_if(unordered_map_particles, [](const auto& value) {
+      return value.second.lifetime_ <= 0.0f;
+    });
+    benchmark::DoNotOptimize(unordered_map_particles);
+  }
+}
+
+BENCHMARK(iterate_unordered_map_add_remove_example)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
