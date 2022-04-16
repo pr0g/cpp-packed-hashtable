@@ -316,11 +316,15 @@ namespace thh
   };
 
   // removes all elements that pass the given predicate from the container
+  // note: using packed_hashtable_rl_t which takes more memory but can map
+  // from values to keys so performance is improved
   template<typename Key, typename Value, typename Tag, typename Pred>
   int32_t remove_when(
     packed_hashtable_rl_t<Key, Value, Tag>& packed_hashtable_rl, Pred pred);
 
   // removes all elements that pass the given predicate from the container
+  // note: using packed_hashtable_t must iterate via handles to remove elements
+  // which is much slower than using packed_hashtable_rl_t
   template<typename Key, typename Value, typename Tag, typename Pred>
   int32_t remove_when(
     packed_hashtable_t<Key, Value, Tag>& packed_hashtable, Pred pred);

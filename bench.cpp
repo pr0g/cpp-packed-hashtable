@@ -9,25 +9,25 @@
 template<
   class Key, class T, class Hash, class KeyEqual, class Alloc, class Pred>
 typename std::unordered_map<Key, T, Hash, KeyEqual, Alloc>::size_type erase_if(
-  std::unordered_map<Key, T, Hash, KeyEqual, Alloc>& c, Pred pred)
+  std::unordered_map<Key, T, Hash, KeyEqual, Alloc>& container, Pred pred)
 {
-  auto old_size = c.size();
-  for (auto it = c.begin(), last = c.end(); it != last;) {
+  const auto old_size = container.size();
+  for (auto it = container.begin(), last = container.end(); it != last;) {
     if (pred(*it)) {
-      it = c.erase(it);
+      it = container.erase(it);
     } else {
       ++it;
     }
   }
-  return old_size - c.size();
+  return old_size - container.size();
 }
 
 template<typename T>
-T random_between(T range_from, T range_to)
+T random_between(const T from, const T to)
 {
   std::random_device rand_dev;
   std::mt19937 generator(rand_dev());
-  std::uniform_int_distribution<T> distribution(range_from, range_to);
+  std::uniform_int_distribution<T> distribution(from, to);
   return distribution(generator);
 }
 
@@ -37,6 +37,29 @@ struct object_t
   char data_[Size];
 };
 
+struct vec3_t
+{
+  float x, y, z;
+};
+
+struct color_t
+{
+  float r, g, b, a;
+};
+
+// note: somewhat representative object that may be stored in the container
+// size: 48 bytes (arbitrary initial values)
+struct particle_t
+{
+  vec3_t position_{1.0f, 2.0f, 3.0f};
+  vec3_t velocity_{-1.0f, 1.0f, 1.0f};
+  color_t color_{1.0f, 1.0f, 1.0f, 0.5f};
+  float size_{1.0f};
+  float lifetime_{1.0f};
+};
+
+// iterate the packed hashtable using value iteration, reading the first byte of
+// every element (object_t of varying size)
 template<typename T>
 static void iterate_packed_hashtable_values(benchmark::State& state)
 {
@@ -55,6 +78,8 @@ static void iterate_packed_hashtable_values(benchmark::State& state)
   }
 }
 
+// iterate the packed hashtable using handle iteration, reading the first byte
+// of every element (object_t of varying size)
 template<typename T>
 static void iterate_packed_hashtable_handles(benchmark::State& state)
 {
@@ -77,6 +102,8 @@ static void iterate_packed_hashtable_handles(benchmark::State& state)
   }
 }
 
+// iterate the unordered_map using key/value iteration, reading the first byte
+// of every element (object_t of varying size)
 template<typename T>
 static void iterate_unordered_map(benchmark::State& state)
 {
@@ -95,26 +122,8 @@ static void iterate_unordered_map(benchmark::State& state)
   }
 }
 
-struct vec3_t
-{
-  float x, y, z;
-};
-
-struct color_t
-{
-  float r, g, b, a;
-};
-
-// 48 bytes
-struct particle_t
-{
-  vec3_t position_;
-  vec3_t velocity_;
-  color_t color_;
-  float size_;
-  float lifetime_;
-};
-
+// iterate the packed hashtable using value iteration, modifying every member of
+// the element for each iteration
 static void iterate_packed_hashtable_values_particles(benchmark::State& state)
 {
   thh::packed_hashtable_t<std::string, particle_t> packed_hashtable_particles;
@@ -145,6 +154,8 @@ BENCHMARK(iterate_packed_hashtable_values_particles)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
+// iterate the packed hashtable using handle iteration, modifying every member
+// of the element for each iteration
 static void iterate_packed_hashtable_handles_particles(benchmark::State& state)
 {
   thh::packed_hashtable_t<std::string, particle_t> packed_hashtable_particles;
@@ -177,6 +188,8 @@ BENCHMARK(iterate_packed_hashtable_handles_particles)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
+// iterate the unordered_map using key/value iteration, modifying every member
+// of the element for each iteration
 static void iterate_unordered_map_values_particles(benchmark::State& state)
 {
   std::unordered_map<std::string, particle_t> map_particles;
@@ -209,6 +222,8 @@ BENCHMARK(iterate_unordered_map_values_particles)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
+// remove elements passing a predicate from the packed hashtable using value
+// iteration (note: uses reverse lookup - packed_hashtable_rl_t)
 static void iterate_packed_hashtable_add_remove_values_particles(
   benchmark::State& state)
 {
@@ -234,6 +249,8 @@ BENCHMARK(iterate_packed_hashtable_add_remove_values_particles)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
+// remove elements passing a predicate from the packed hashtable using handle
+// iteration (note: does not use reverse lookup - packed_hashtable_t)
 static void iterate_packed_hashtable_add_remove_handles_particles(
   benchmark::State& state)
 {
@@ -258,6 +275,8 @@ BENCHMARK(iterate_packed_hashtable_add_remove_handles_particles)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
+// remove elements passing a predicate from an unordered map using key/value
+// iteration
 static void iterate_unordered_map_add_remove_particles(benchmark::State& state)
 {
   std::unordered_map<std::string, particle_t> unordered_map_particles;
@@ -281,7 +300,7 @@ BENCHMARK(iterate_unordered_map_add_remove_particles)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
-static void find_lookup(benchmark::State& state)
+static void find_packed_hashtable(benchmark::State& state)
 {
   thh::packed_hashtable_t<std::string, object_t<32>> packed_hashtable;
   packed_hashtable.reserve(static_cast<int32_t>(state.range(0)));
@@ -299,9 +318,9 @@ static void find_lookup(benchmark::State& state)
   }
 }
 
-BENCHMARK(find_lookup)->RangeMultiplier(2)->Range(32, 8 << 13);
+BENCHMARK(find_packed_hashtable)->RangeMultiplier(2)->Range(32, 8 << 13);
 
-static void find_map(benchmark::State& state)
+static void find_unordered_map(benchmark::State& state)
 {
   std::unordered_map<std::string, object_t<32>> map;
   map.reserve(state.range());
@@ -319,7 +338,7 @@ static void find_map(benchmark::State& state)
   }
 }
 
-BENCHMARK(find_map)->RangeMultiplier(2)->Range(32, 8 << 13);
+BENCHMARK(find_unordered_map)->RangeMultiplier(2)->Range(32, 8 << 13);
 
 BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<32>)
   ->RangeMultiplier(2)
