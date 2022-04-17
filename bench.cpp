@@ -58,10 +58,8 @@ struct particle_t
   float lifetime_{1.0f};
 };
 
-// iterate the packed hashtable using value iteration, reading the first byte of
-// every element (object_t of varying size)
 template<typename T>
-static void iterate_object_t_in_packed_hashtable_by_value(
+thh::packed_hashtable_t<std::string, T> populate_packed_hashtable(
   benchmark::State& state)
 {
   thh::packed_hashtable_t<std::string, T> packed_hashtable;
@@ -69,6 +67,17 @@ static void iterate_object_t_in_packed_hashtable_by_value(
   for (int i = 0; i < state.range(0); ++i) {
     packed_hashtable.add({std::string("name") + std::to_string(i), T{}});
   }
+  return packed_hashtable;
+}
+
+// iterate the packed hashtable using value iteration, reading the first byte of
+// every element (object_t of varying size)
+template<typename T>
+static void iterate_object_t_in_packed_hashtable_by_value(
+  benchmark::State& state)
+{
+  const thh::packed_hashtable_t<std::string, T> packed_hashtable =
+    populate_packed_hashtable<T>(state);
 
   for ([[maybe_unused]] auto _ : state) {
     char data_element = 0;
@@ -85,10 +94,51 @@ template<typename T>
 static void iterate_object_t_in_packed_hashtable_by_handle(
   benchmark::State& state)
 {
-  thh::packed_hashtable_t<std::string, T> packed_hashtable;
-  packed_hashtable.reserve(static_cast<int32_t>(state.range(0)));
-  for (int i = 0; i < state.range(0); ++i) {
-    packed_hashtable.add({std::string("name") + std::to_string(i), T{}});
+  thh::packed_hashtable_t<std::string, T> packed_hashtable =
+    populate_packed_hashtable<T>(state);
+
+  for ([[maybe_unused]] auto _ : state) {
+    char data_element = 0;
+    std::for_each(
+      packed_hashtable.hbegin(), packed_hashtable.hend(),
+      [&data_element, &packed_hashtable](const auto& key_handle) {
+        packed_hashtable.call(key_handle.second, [&data_element](auto& value) {
+          data_element = value.data_[0];
+        });
+      });
+    benchmark::DoNotOptimize(data_element);
+  }
+}
+
+// iterate the packed hashtable using handle iteration (ensure handles are in a
+// random order) reading the first byte of every element (object_t of varying
+// size)
+template<typename T>
+static void iterate_object_t_in_packed_hashtable_by_handle_in_random_order(
+  benchmark::State& state)
+{
+  thh::packed_hashtable_t<std::string, T> packed_hashtable =
+    populate_packed_hashtable<T>(state);
+
+  // remove half of the handles at random
+  for (int i = 0; i < state.range(0) / 2; ++i) {
+    // hacky random removal, not efficient
+    while (true) {
+      if (auto found = packed_hashtable.find(
+            std::string("name")
+            + std::to_string(random_between((int)0, (int)state.range(0))));
+          found != packed_hashtable.hend()) {
+        packed_hashtable.remove(found);
+        break;
+      }
+    }
+  }
+
+  // add back the handles (they will fill up the random holes that were left)
+  auto upper_range = state.range(0);
+  for (int i = 0; i < state.range(0) / 2; ++i) {
+    packed_hashtable.add(
+      {std::string("name") + std::to_string(upper_range++), T{}});
   }
 
   for ([[maybe_unused]] auto _ : state) {
@@ -460,6 +510,42 @@ BENCHMARK_TEMPLATE(
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_packed_hashtable_by_handle_in_random_order, object_t<32>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_packed_hashtable_by_handle_in_random_order, object_t<64>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_packed_hashtable_by_handle_in_random_order, object_t<128>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_packed_hashtable_by_handle_in_random_order, object_t<256>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_packed_hashtable_by_handle_in_random_order, object_t<512>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_packed_hashtable_by_handle_in_random_order,
+  object_t<1024>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_packed_hashtable_by_handle_in_random_order,
+  object_t<2048>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_packed_hashtable_by_handle_in_random_order,
+  object_t<4096>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+
 BENCHMARK_TEMPLATE(iterate_object_t_in_packed_hashtable_by_value, object_t<32>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
@@ -489,15 +575,3 @@ BENCHMARK_TEMPLATE(
   ->Range(32, 8 << 13);
 
 BENCHMARK_MAIN();
-
-// for (int i = 0; i < state.range(0) / 2; ++i) {
-//   packed_hashtable_particles.remove(
-//     std::string("name")
-//     + std::to_string(random_between((int)0, (int)state.range())));
-// }
-// for (int i = 0; i < state.range(0); ++i) {
-//   packed_hashtable_particles.add(
-//     {std::string("name")
-//        + std::to_string(packed_hashtable_particles.size() + 1),
-//      particle_t{}});
-// }
