@@ -59,11 +59,13 @@ if(THH_PACKED_HASHTABLE_ENABLE_BENCH)
                        GIT_REPOSITORY https://github.com/google/benchmark.git)
   FetchContent_Declare(abseil
                        GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git)
-  FetchContent_MakeAvailable(benchmark abseil)
+  fetchcontent_Declare(robin-hood GIT_REPOSITORY
+                       https://github.com/martinus/robin-hood-hashing.git)
+  FetchContent_MakeAvailable(benchmark abseil robin-hood)
   add_executable(${PROJECT_NAME}-bench)
   target_sources(${PROJECT_NAME}-bench PRIVATE bench.cpp)
   target_link_libraries(${PROJECT_NAME}-bench ${PROJECT_NAME} benchmark
-                        absl::flat_hash_map)
+                        absl::flat_hash_map robin_hood)
   target_compile_options(
     ${PROJECT_NAME}-bench
     PRIVATE $<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/W4 /WX>

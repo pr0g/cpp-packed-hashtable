@@ -2,6 +2,7 @@
 
 #include <absl/container/flat_hash_map.h>
 #include <benchmark/benchmark.h>
+#include <robin_hood.h>
 
 #include <cstdint>
 #include <random>
@@ -183,6 +184,27 @@ static void iterate_object_t_in_flat_hash_map_by_key_value_pair(
   benchmark::State& state)
 {
   absl::flat_hash_map<std::string, T> flat_hash_map;
+  flat_hash_map.reserve(state.range(0));
+  for (int i = 0; i < state.range(0); ++i) {
+    flat_hash_map.insert({std::string("name") + std::to_string(i), T{}});
+  }
+
+  for ([[maybe_unused]] auto _ : state) {
+    char data_element = 0;
+    std::for_each(
+      flat_hash_map.begin(), flat_hash_map.end(),
+      [&data_element](auto& value) { data_element = value.second.data_[0]; });
+    benchmark::DoNotOptimize(data_element);
+  }
+}
+
+// iterate the robin hood unordered_flat_map using key/value iteration, reading
+// the first byte of every element (object_t of varying size)
+template<typename T>
+static void iterate_object_t_in_unordered_flat_map_by_key_value_pair(
+  benchmark::State& state)
+{
+  robin_hood::unordered_flat_map<std::string, T> flat_hash_map;
   flat_hash_map.reserve(state.range(0));
   for (int i = 0; i < state.range(0); ++i) {
     flat_hash_map.insert({std::string("name") + std::to_string(i), T{}});
@@ -531,6 +553,39 @@ BENCHMARK_TEMPLATE(
   ->Range(32, 8 << 13);
 BENCHMARK_TEMPLATE(
   iterate_object_t_in_flat_hash_map_by_key_value_pair, object_t<4096>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_flat_map_by_key_value_pair, object_t<32>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_flat_map_by_key_value_pair, object_t<64>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_flat_map_by_key_value_pair, object_t<128>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_flat_map_by_key_value_pair, object_t<256>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_flat_map_by_key_value_pair, object_t<512>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_flat_map_by_key_value_pair, object_t<1024>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_flat_map_by_key_value_pair, object_t<2048>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_flat_map_by_key_value_pair, object_t<4096>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
