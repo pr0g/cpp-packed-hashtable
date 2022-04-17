@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # helper to quickly configure project
 
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
