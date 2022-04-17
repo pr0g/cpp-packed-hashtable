@@ -24,6 +24,7 @@ if(THH_PACKED_HASHTABLE_ENABLE_MEMORY)
   add_executable(${PROJECT_NAME}-memory)
   target_sources(${PROJECT_NAME}-memory PRIVATE memory.cpp)
   target_link_libraries(${PROJECT_NAME}-memory PRIVATE ${PROJECT_NAME})
+  target_compile_features(${PROJECT_NAME}-memory PRIVATE cxx_std_17)
 endif()
 
 if(THH_PACKED_HASHTABLE_ENABLE_TEST)
@@ -49,19 +50,24 @@ if(THH_PACKED_HASHTABLE_ENABLE_TEST)
             $<$<COMPILE_LANG_AND_ID:CXX,GNU>:-Wall
             -Wextra
             -pedantic>)
+  target_compile_features(${PROJECT_NAME}-test PRIVATE cxx_std_17)
 endif()
 
 if(THH_PACKED_HASHTABLE_ENABLE_BENCH)
   set(BENCHMARK_ENABLE_TESTING OFF)
   FetchContent_Declare(benchmark
                        GIT_REPOSITORY https://github.com/google/benchmark.git)
-  FetchContent_MakeAvailable(benchmark)
+  FetchContent_Declare(abseil
+                       GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git)
+  FetchContent_MakeAvailable(benchmark abseil)
   add_executable(${PROJECT_NAME}-bench)
   target_sources(${PROJECT_NAME}-bench PRIVATE bench.cpp)
-  target_link_libraries(${PROJECT_NAME}-bench ${PROJECT_NAME} benchmark)
+  target_link_libraries(${PROJECT_NAME}-bench ${PROJECT_NAME} benchmark
+                        absl::flat_hash_map)
   target_compile_options(
     ${PROJECT_NAME}-bench
     PRIVATE $<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/W4 /WX>
             $<$<COMPILE_LANG_AND_ID:CXX,AppleClang,Clang,GNU>: -Wall -Wextra
             -pedantic>)
+  target_compile_features(${PROJECT_NAME}-bench PRIVATE cxx_std_17)
 endif()
