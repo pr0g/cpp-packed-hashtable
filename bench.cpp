@@ -61,7 +61,8 @@ struct particle_t
 // iterate the packed hashtable using value iteration, reading the first byte of
 // every element (object_t of varying size)
 template<typename T>
-static void iterate_packed_hashtable_values(benchmark::State& state)
+static void iterate_object_t_in_packed_hashtable_by_value(
+  benchmark::State& state)
 {
   thh::packed_hashtable_t<std::string, T> packed_hashtable;
   packed_hashtable.reserve(static_cast<int32_t>(state.range(0)));
@@ -81,7 +82,8 @@ static void iterate_packed_hashtable_values(benchmark::State& state)
 // iterate the packed hashtable using handle iteration, reading the first byte
 // of every element (object_t of varying size)
 template<typename T>
-static void iterate_packed_hashtable_handles(benchmark::State& state)
+static void iterate_object_t_in_packed_hashtable_by_handle(
+  benchmark::State& state)
 {
   thh::packed_hashtable_t<std::string, T> packed_hashtable;
   packed_hashtable.reserve(static_cast<int32_t>(state.range(0)));
@@ -105,7 +107,8 @@ static void iterate_packed_hashtable_handles(benchmark::State& state)
 // iterate the unordered_map using key/value iteration, reading the first byte
 // of every element (object_t of varying size)
 template<typename T>
-static void iterate_unordered_map(benchmark::State& state)
+static void iterate_object_t_in_unordered_map_by_key_value_pair(
+  benchmark::State& state)
 {
   std::unordered_map<std::string, T> map;
   map.reserve(state.range(0));
@@ -124,7 +127,8 @@ static void iterate_unordered_map(benchmark::State& state)
 
 // iterate the packed hashtable using value iteration, modifying every member of
 // the element for each iteration
-static void iterate_packed_hashtable_values_particles(benchmark::State& state)
+static void iterate_particle_t_in_packed_hashtable_by_value(
+  benchmark::State& state)
 {
   thh::packed_hashtable_t<std::string, particle_t> packed_hashtable_particles;
   packed_hashtable_particles.reserve(static_cast<int32_t>(state.range(0)));
@@ -150,13 +154,14 @@ static void iterate_packed_hashtable_values_particles(benchmark::State& state)
   }
 }
 
-BENCHMARK(iterate_packed_hashtable_values_particles)
+BENCHMARK(iterate_particle_t_in_packed_hashtable_by_value)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
 // iterate the packed hashtable using handle iteration, modifying every member
 // of the element for each iteration
-static void iterate_packed_hashtable_handles_particles(benchmark::State& state)
+static void iterate_particle_t_in_packed_hashtable_by_handle(
+  benchmark::State& state)
 {
   thh::packed_hashtable_t<std::string, particle_t> packed_hashtable_particles;
   packed_hashtable_particles.reserve(static_cast<int32_t>(state.range(0)));
@@ -184,13 +189,14 @@ static void iterate_packed_hashtable_handles_particles(benchmark::State& state)
   }
 }
 
-BENCHMARK(iterate_packed_hashtable_handles_particles)
+BENCHMARK(iterate_particle_t_in_packed_hashtable_by_handle)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
 // iterate the unordered_map using key/value iteration, modifying every member
 // of the element for each iteration
-static void iterate_unordered_map_particles(benchmark::State& state)
+static void iterate_particle_t_in_unordered_map_by_key_value_pair(
+  benchmark::State& state)
 {
   std::unordered_map<std::string, particle_t> map_particles;
   map_particles.reserve(state.range(0));
@@ -218,11 +224,11 @@ static void iterate_unordered_map_particles(benchmark::State& state)
   }
 }
 
-BENCHMARK(iterate_unordered_map_particles)
+BENCHMARK(iterate_particle_t_in_unordered_map_by_key_value_pair)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
-static void packed_hashtable_add_particles(benchmark::State& state)
+static void add_particle_t_in_packed_hashtable(benchmark::State& state)
 {
   thh::packed_hashtable_t<int64_t, particle_t> packed_hashtable_particles;
   packed_hashtable_particles.reserve(static_cast<int32_t>(state.range(0)));
@@ -233,11 +239,11 @@ static void packed_hashtable_add_particles(benchmark::State& state)
   }
 }
 
-BENCHMARK(packed_hashtable_add_particles)
+BENCHMARK(add_particle_t_in_packed_hashtable)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
-static void packed_hashtable_rl_add_particles(benchmark::State& state)
+static void add_particle_t_inpacked_hashtable_rl(benchmark::State& state)
 {
   thh::packed_hashtable_rl_t<int64_t, particle_t> packed_hashtable_particles;
   packed_hashtable_particles.reserve(static_cast<int32_t>(state.range(0)));
@@ -248,11 +254,11 @@ static void packed_hashtable_rl_add_particles(benchmark::State& state)
   }
 }
 
-BENCHMARK(packed_hashtable_rl_add_particles)
+BENCHMARK(add_particle_t_inpacked_hashtable_rl)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
-static void unordered_map_add_particles(benchmark::State& state)
+static void add_particle_t_in_unordered_map(benchmark::State& state)
 {
   std::unordered_map<int64_t, particle_t> map_particles;
   map_particles.reserve(state.range(0));
@@ -263,11 +269,13 @@ static void unordered_map_add_particles(benchmark::State& state)
   }
 }
 
-BENCHMARK(unordered_map_add_particles)->RangeMultiplier(2)->Range(32, 8 << 13);
+BENCHMARK(add_particle_t_in_unordered_map)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
 
 // remove elements passing a predicate from the packed hashtable using value
 // iteration (note: uses reverse lookup - packed_hashtable_rl_t)
-static void iterate_packed_hashtable_remove_values_particles(
+static void remove_particle_t_in_packed_hashtable_by_value(
   benchmark::State& state)
 {
   thh::packed_hashtable_rl_t<std::string, particle_t>
@@ -288,13 +296,13 @@ static void iterate_packed_hashtable_remove_values_particles(
   }
 }
 
-BENCHMARK(iterate_packed_hashtable_remove_values_particles)
+BENCHMARK(remove_particle_t_in_packed_hashtable_by_value)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
 // remove elements passing a predicate from the packed hashtable using handle
 // iteration (note: does not use reverse lookup - packed_hashtable_t)
-static void iterate_packed_hashtable_remove_handles_particles(
+static void remove_particle_t_in_packed_hashtable_by_handle(
   benchmark::State& state)
 {
   thh::packed_hashtable_t<std::string, particle_t> packed_hashtable_particles;
@@ -314,13 +322,14 @@ static void iterate_packed_hashtable_remove_handles_particles(
   }
 }
 
-BENCHMARK(iterate_packed_hashtable_remove_handles_particles)
+BENCHMARK(remove_particle_t_in_packed_hashtable_by_handle)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
 // remove elements passing a predicate from an unordered map using key/value
 // iteration
-static void iterate_unordered_map_remove_particles(benchmark::State& state)
+static void remove_particle_t_in_unordered_map_by_key_value_pair(
+  benchmark::State& state)
 {
   std::unordered_map<std::string, particle_t> unordered_map_particles;
   unordered_map_particles.reserve(static_cast<int32_t>(state.range(0)));
@@ -339,11 +348,11 @@ static void iterate_unordered_map_remove_particles(benchmark::State& state)
   }
 }
 
-BENCHMARK(iterate_unordered_map_remove_particles)
+BENCHMARK(remove_particle_t_in_unordered_map_by_key_value_pair)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
-static void find_packed_hashtable(benchmark::State& state)
+static void find_value_in_packed_hashtable_by_key(benchmark::State& state)
 {
   thh::packed_hashtable_t<std::string, object_t<32>> packed_hashtable;
   packed_hashtable.reserve(static_cast<int32_t>(state.range(0)));
@@ -361,9 +370,11 @@ static void find_packed_hashtable(benchmark::State& state)
   }
 }
 
-BENCHMARK(find_packed_hashtable)->RangeMultiplier(2)->Range(32, 8 << 13);
+BENCHMARK(find_value_in_packed_hashtable_by_key)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
 
-static void find_unordered_map(benchmark::State& state)
+static void find_value_in_unordered_map_by_key(benchmark::State& state)
 {
   std::unordered_map<std::string, object_t<32>> map;
   map.reserve(state.range());
@@ -381,80 +392,99 @@ static void find_unordered_map(benchmark::State& state)
   }
 }
 
-BENCHMARK(find_unordered_map)->RangeMultiplier(2)->Range(32, 8 << 13);
-
-BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<32>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<64>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<128>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<256>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<512>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<1024>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<2048>)
-  ->RangeMultiplier(2)
-  ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_unordered_map, object_t<4096>)
+BENCHMARK(find_value_in_unordered_map_by_key)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<32>)
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_map_by_key_value_pair, object_t<32>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<64>)
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_map_by_key_value_pair, object_t<64>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<128>)
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_map_by_key_value_pair, object_t<128>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<256>)
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_map_by_key_value_pair, object_t<256>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<512>)
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_map_by_key_value_pair, object_t<512>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<1024>)
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_map_by_key_value_pair, object_t<1024>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<2048>)
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_map_by_key_value_pair, object_t<2048>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_handles, object_t<4096>)
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_map_by_key_value_pair, object_t<4096>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<32>)
+BENCHMARK_TEMPLATE(iterate_object_t_in_packed_hashtable_by_handle, object_t<32>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<64>)
+BENCHMARK_TEMPLATE(iterate_object_t_in_packed_hashtable_by_handle, object_t<64>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<128>)
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_packed_hashtable_by_handle, object_t<128>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<256>)
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_packed_hashtable_by_handle, object_t<256>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<512>)
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_packed_hashtable_by_handle, object_t<512>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<1024>)
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_packed_hashtable_by_handle, object_t<1024>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<2048>)
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_packed_hashtable_by_handle, object_t<2048>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
-BENCHMARK_TEMPLATE(iterate_packed_hashtable_values, object_t<4096>)
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_packed_hashtable_by_handle, object_t<4096>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+
+BENCHMARK_TEMPLATE(iterate_object_t_in_packed_hashtable_by_value, object_t<32>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(iterate_object_t_in_packed_hashtable_by_value, object_t<64>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(iterate_object_t_in_packed_hashtable_by_value, object_t<128>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(iterate_object_t_in_packed_hashtable_by_value, object_t<256>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(iterate_object_t_in_packed_hashtable_by_value, object_t<512>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_packed_hashtable_by_value, object_t<1024>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_packed_hashtable_by_value, object_t<2048>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_packed_hashtable_by_value, object_t<4096>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
 
