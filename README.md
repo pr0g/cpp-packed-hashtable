@@ -27,7 +27,7 @@ This library is a random experiment to see what it would take to create a contai
 
 The core idea is to wrap two data structures behind one interface in an attempt to get the best of both worlds.
 
-`packed_hashtable_t` internally has a `handle_vector_t` (please see [this repo](https://github.com/pr0g/cpp-handle-container) for more details, it's essentially a version of [sparse set](https://programmingpraxis.com/2012/03/09/sparse-sets/)) and a `std::unordered_map` (this could just as easily be a more efficient hash table implementation, the main reason for using it is to drag in less dependencies).
+`packed_hashtable_t` internally has a `handle_vector_t` (please see [this repo](https://github.com/pr0g/cpp-handle-container) for more details, it's essentially a version of a [sparse set](https://programmingpraxis.com/2012/03/09/sparse-sets/)) and a `std::unordered_map` (this could just as easily be a more efficient hash table implementation, the main reason for using it is to drag in less dependencies).
 
 When you insert/add a key/value pair, we allocate a value from the `handle_vector_t` and move the value argument into place (`handle_vector_t` is just a `std::vector<T>` under the hood) and then return the handle for that new value. We then store the handle with the key argument in the `std::unordered_map`. To look-up a value, we go **key -> handle -> value**. This means we've added an extra level of indirection for insertions, removals and look-ups, so these will be slightly slower than using a `std::unordered_map` directly, however the cool part is when we iterate over the actual values, they are all packed tightly together in a contiguous buffer and we get excellent cache locality.
 
@@ -85,7 +85,7 @@ Zooming in on just the well performing containers, we can see it's pretty close 
 
 ### Memory Usage
 
-Below we see the memory usage of `packed_hashtable_t` compared the other standard library containers (_**Note:** These graphs do not contain memory usage for_ `absl::flat_has_map` _or_ `robin_hood::unordered_flat_map`).
+Below we see the memory usage of `packed_hashtable_t` compared the other standard library containers (_**Note:** These graphs do not contain memory usage for_ `absl::flat_hash_map` _or_ `robin_hood::unordered_flat_map`).
 
 For very small elements the overhead is pretty significant (especially for the `packed_hashtable_rl_t` with the reverse look-up). The better one to compare is the plain `packed_hashtable_t` (light blue line).
 
