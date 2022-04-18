@@ -63,6 +63,26 @@ There are quite a few benchmarks for a varying number of elements with different
 
 The benchmarks at the time of writing are pretty simple. One set visit every element and read a value from the first byte of each and another attempts to mimic more real-world conditions, reading and writing to multiple fields of each element. There are also benchmarks for additions and removals.
 
+### Graphs
+
+Below is a benchmark showing iteration performance for 32 byte elements with the number of elements increasing from 32 to 65,536 (`packed_hashtable_t` is the grey line).
+
+<img width="601" alt="Screenshot 2022-04-18 at 11 02 30" src="https://user-images.githubusercontent.com/1136625/163795212-656ae6c0-98a0-4464-9d52-a467c2079501.png">
+
+(_Notice how iterating via handles when first inserted has deceptively good performance (orange line), but this is only down to 'test' conditions as all handles will be visited in order. By randomly removing and then reinserting handles we see more realistic performance (yellow line) as elements will then be visited out of order, with us then hopping around in memory a lot more_).
+
+Performance is still good for larger sizes (here we see a 128 byte element).
+
+<img width="601" alt="Screenshot 2022-04-18 at 11 05 15" src="https://user-images.githubusercontent.com/1136625/163795226-e8f5b502-d164-442c-b253-c1453e3edd29.png">
+
+As the size of the element increases, the gains become less noticeable when compared to `absl::flat_hash_map` and `robin_hood::unordered_flat_map` but it's night and day with `std::unordered_map`.
+
+<img width="601" alt="Screenshot 2022-04-18 at 11 07 56" src="https://user-images.githubusercontent.com/1136625/163795243-05ffb49e-d43f-472b-bcb0-2762f3ad096c.png">
+
+Zooming in on just the well performing containers, we can see it's pretty close but just relying on `std::vector` under the hood is arguably the fastest thing to do (if _only_ considering iteration).
+
+<img width="601" alt="Screenshot 2022-04-18 at 11 17 39" src="https://user-images.githubusercontent.com/1136625/163795255-f1466905-5250-4fd0-8441-fdabb5953e37.png">
+
 ## Usage
 
 To use the library it's possible to drop the `thh-packed-hashtable` folder inside `include` into your project (and then just `#include "thh-packed-hashtable/packed-hashtable.hpp"`) or use CMake's `FetchContent` command.
