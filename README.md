@@ -63,7 +63,7 @@ There are quite a few benchmarks for a varying number of elements with different
 
 The benchmarks at the time of writing are pretty simple. One set visit every element and read a value from the first byte of each and another attempts to mimic more real-world conditions, reading and writing to multiple fields of each element. There are also benchmarks for additions and removals.
 
-### Graphs
+### Iteration Performance
 
 Below is a benchmark showing iteration performance for 32 byte elements with the number of elements increasing from 32 to 65,536 (`packed_hashtable_t` is the grey line).
 
@@ -82,6 +82,24 @@ As the size of the element increases, the gains become less noticeable when comp
 Zooming in on just the well performing containers, we can see it's pretty close but just relying on `std::vector` under the hood is arguably the fastest thing to do (if _only_ considering iteration).
 
 <img width="601" alt="Screenshot 2022-04-18 at 11 17 39" src="https://user-images.githubusercontent.com/1136625/163795255-f1466905-5250-4fd0-8441-fdabb5953e37.png">
+
+### Memory Usage
+
+Below we see the memory usage of `packed_hashtable_t` compared the other standard library containers (_**Note:** These graphs do not contain memory usage for_ `absl::flat_has_map` _or_ `robin_hood::unordered_flat_map`).
+
+For very small elements the overhead is pretty significant (especially for the `packed_hashtable_rl_t` with the reverse look-up). The better one to compare is the plain `packed_hashtable_t` (light blue line).
+
+<img width="508" alt="Screenshot 2022-04-18 at 11 48 37" src="https://user-images.githubusercontent.com/1136625/163798939-762ba5ff-2cd6-4166-bc95-f43b3ddf5ef5.png">
+
+As the size of the element increases however the overall footprint relative to total memory usage begins to shrink.
+
+<img width="508" alt="Screenshot 2022-04-18 at 11 49 42" src="https://user-images.githubusercontent.com/1136625/163798946-9f49bf82-2374-404e-9eab-b6fe7a7f392b.png">
+
+With very large elements showing the overhead to be (relatively speaking) pretty small. In this case `packed_hashtable_t` uses **0.67%** more memory than a plain `std::unordered_map`. It is however nearly **26.0%** in the 32 byte element case.
+
+<img width="508" alt="Screenshot 2022-04-18 at 11 51 35" src="https://user-images.githubusercontent.com/1136625/163798960-c7b9fe79-5571-4524-9bd7-82077a6bba2b.png">
+
+As with everything this is the major trade-off for the increased iteration performance (along with slower insertions). Removals (if touching every element like `erase_if`) will actually be much faster, but requires the even larger memory overhead of `packed_hashtable_rl_t`). If it is worth it or not very much would depend on the use-case.
 
 ## Usage
 
