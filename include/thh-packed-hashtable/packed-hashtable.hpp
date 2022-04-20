@@ -301,9 +301,9 @@ namespace thh
 
     // adds a mapping from a handle to a key
     void add_mapping(typed_handle_t<Tag> handle, const Key* key);
-    // remove the mapping from handle to key
+    // removes a mapping from a handle to a key
     void remove_mapping(typed_handle_t<Tag> handle);
-    // clear all handle to key mappings from the container
+    // clears all handle to key mappings from the container
     void clear_mappings();
 
   public:
