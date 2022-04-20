@@ -8,9 +8,10 @@
 - ~~test for iterate~~
 - ~~add has~~
 - ~~add capacity~~
+- ~~value_iterator~~
+- ~~handle_iterator~~
 
-- value_iterator
-- handle_iterator
+- add hash and equal template argument for internal key (if a custom hash and/or equality operator need to be added)
 
 ## notes
 
