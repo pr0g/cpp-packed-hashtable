@@ -14,11 +14,11 @@ namespace thh
       // based on boost hash combine function
       // ref:
       // boost.org/doc/libs/1_55_0/doc/html/hash/reference.html#boost.hash_combine
-      const auto hash_combine_fn = [](std::size_t& seed, const auto& v) {
+      const auto hash_combine_fn = [](std::size_t& seed, const auto& value) {
         std::hash<typename std::remove_const_t<
-          typename std::remove_reference_t<decltype(v)>>>
+          typename std::remove_reference_t<decltype(value)>>>
           hasher;
-        seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= hasher(value) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
       };
 
       std::size_t seed = 0;
@@ -62,27 +62,27 @@ namespace thh
       typename decltype(keys_to_handles_)::const_iterator;
 
     // adds a value to the container (forwarding reference)
-    // returns a pair consisting of an interator to the inserted element (or to
+    // returns a pair consisting of an iterator to the inserted element (or to
     // the element that prevented the insertion) and a bool indicating whether
     // the insertion took place
     // type P should conform to key_value_type
     template<typename P>
     std::pair<handle_iterator, bool> add(P&& key_value);
     // adds a value to the container (rvalue reference)
-    // returns a pair consisting of an interator to the inserted element (or to
+    // returns a pair consisting of an iterator to the inserted element (or to
     // the element that prevented the insertion) and a bool indicating whether
     // the insertion took place
     // note: supports .add({key, value}) syntax
     std::pair<handle_iterator, bool> add(key_value_type&& key_value);
     // adds a value to the container or updates it if the key already exists
-    // returns a pair consisting of an interator to the inserted or updated
-    // element and a bool indicating whether whether the insertion took place
+    // returns a pair consisting of an iterator to the inserted or updated
+    // element and a bool indicating whether the insertion took place
     // type P should conform to key_value_type
     template<typename P>
     std::pair<handle_iterator, bool> add_or_update(P&& key_value);
     // adds a value to the container or updates it if the key already exists
-    // returns a pair consisting of an interator to the inserted or updated
-    // element and a bool indicating whether whether the insertion took place
+    // returns a pair consisting of an iterator to the inserted or updated
+    // element and a bool indicating whether the insertion took place
     // note: supports .add({key, value}) syntax
     std::pair<handle_iterator, bool> add_or_update(key_value_type&& key_value);
     // finds a handle with the specified key
@@ -94,11 +94,11 @@ namespace thh
     // element was not found (hcend())
     [[nodiscard]] const_handle_iterator find(const Key& key) const;
     // removes the element with the equivalent key (if one exists)
-    // returns an interator following the last removed element or one past the
+    // returns an iterator following the last removed element or one past the
     // end if the element was not found (hend())
     handle_iterator remove(const Key& key);
     // removes the element at position
-    // returns an interator following the last removed element (position must
+    // returns an iterator following the last removed element (position must
     // be valid and dereferenceable)
     handle_iterator remove(handle_iterator position);
     // returns if the container has an element with the equivalent key
@@ -184,27 +184,28 @@ namespace thh
     [[nodiscard]] auto hcend() const -> const_handle_iterator;
 
     // proxy to support friendly iteration for handles (see handle_iteration())
-    // note: to be used with range based for
-    // for (auto handle : packed_hashtable.handle_iteration())
+    // note: to be used with range based for loop
+    // e.g. for (auto handle : packed_hashtable.handle_iteration())
     class handle_iterator_wrapper_t
     {
       base_packed_hashtable_t* pht_ = nullptr;
 
     public:
-      handle_iterator_wrapper_t(base_packed_hashtable_t& pht);
+      explicit handle_iterator_wrapper_t(base_packed_hashtable_t& pht);
       [[nodiscard]] auto begin() -> handle_iterator;
       [[nodiscard]] auto end() -> handle_iterator;
     };
 
     // proxy to support friendly iteration for handles (see handle_iteration())
-    // note: to be used with range based for (const version)
-    // for (auto handle : packed_hashtable.handle_iteration())
+    // note: to be used with range based for loop (const version)
+    // e.g. for (auto handle : packed_hashtable.handle_iteration())
     class const_handle_iterator_wrapper_t
     {
       const base_packed_hashtable_t* pht_ = nullptr;
 
     public:
-      const_handle_iterator_wrapper_t(const base_packed_hashtable_t& pht);
+      explicit const_handle_iterator_wrapper_t(
+        const base_packed_hashtable_t& pht);
       [[nodiscard]] auto begin() const -> const_handle_iterator;
       [[nodiscard]] auto cbegin() const -> const_handle_iterator;
       [[nodiscard]] auto end() const -> const_handle_iterator;
@@ -212,27 +213,28 @@ namespace thh
     };
 
     // proxy to support friendly iteration for values (see value_iteration())
-    // note: to be used with range based for
-    // for (auto& value : packed_hashtable.value_iteration())
+    // note: to be used with range based for loop
+    // e.g. for (auto& value : packed_hashtable.value_iteration())
     class value_iterator_wrapper_t
     {
       base_packed_hashtable_t* pht_ = nullptr;
 
     public:
-      value_iterator_wrapper_t(base_packed_hashtable_t& pht);
+      explicit value_iterator_wrapper_t(base_packed_hashtable_t& pht);
       [[nodiscard]] auto begin() -> value_iterator;
       [[nodiscard]] auto end() -> value_iterator;
     };
 
     // proxy to support friendly iteration for values (see value_iteration())
-    // note: to be used with range based for (const version)
-    // for (const auto& value : packed_hashtable.value_iteration())
+    // note: to be used with range based for loop (const version)
+    // e.g. for (const auto& value : packed_hashtable.value_iteration())
     class const_value_iterator_wrapper_t
     {
       const base_packed_hashtable_t* pht_ = nullptr;
 
     public:
-      const_value_iterator_wrapper_t(const base_packed_hashtable_t& pht);
+      explicit const_value_iterator_wrapper_t(
+        const base_packed_hashtable_t& pht);
       [[nodiscard]] auto begin() const -> const_value_iterator;
       [[nodiscard]] auto cbegin() const -> const_value_iterator;
       [[nodiscard]] auto end() const -> const_value_iterator;
@@ -316,7 +318,7 @@ namespace thh
   };
 
   // removes all elements that pass the given predicate from the container
-  // note: using packed_hashtable_rl_t which takes more memory but can map
+  // note: using packed_hashtable_rl_t takes more memory but can map
   // from values to keys so performance is improved
   template<typename Key, typename Value, typename Tag, typename Pred>
   int32_t remove_when(
