@@ -150,6 +150,14 @@ namespace thh
   }
 
   template<typename Key, typename Value, typename Tag, typename RemovalPolicy>
+  [[nodiscard]] std::optional<int32_t> base_packed_hashtable_t<
+    Key, Value, Tag, RemovalPolicy>::index_from_handle(typed_handle_t<Tag>
+                                                         handle) const
+  {
+    return values_.index_from_handle(handle);
+  }
+
+  template<typename Key, typename Value, typename Tag, typename RemovalPolicy>
   int32_t base_packed_hashtable_t<Key, Value, Tag, RemovalPolicy>::capacity()
     const
   {
@@ -503,6 +511,14 @@ namespace thh
     return const_value_iterator_wrapper_t(*this);
   }
 
+  template<typename Key, typename Value, typename Tag, typename RemovalPolicy>
+  template<typename Compare>
+  void base_packed_hashtable_t<Key, Value, Tag, RemovalPolicy>::sort(
+    Compare&& cmp)
+  {
+    values_.sort(std::forward<Compare>(cmp));
+  }
+
   template<typename Key, typename Value, typename Tag>
   void packed_hashtable_rl_t<Key, Value, Tag>::add_mapping(
     const typed_handle_t<Tag> handle, const Key* key)
@@ -535,6 +551,17 @@ namespace thh
       }
     }
     return false;
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  std::optional<Key> packed_hashtable_rl_t<Key, Value, Tag>::key_from_handle(
+    typed_handle_t<Tag> handle)
+  {
+    if (auto key_it = handles_to_keys_.find(handle);
+        key_it != handles_to_keys_.end()) {
+      return *key_it->second;
+    }
+    return {};
   }
 
   template<typename Key, typename Value, typename Tag, typename Pred>

@@ -4,9 +4,10 @@ project(thh-packed-hashtable LANGUAGES CXX)
 include(FetchContent)
 
 FetchContent_Declare(
-  thh-handle-vector
-  GIT_REPOSITORY https://github.com/pr0g/cpp-handle-container.git
-  GIT_TAG ed1cdd6d17f4f8ee95de56ffa666e08f00986250)
+  thh-handle-vector SOURCE_DIR
+                    /Users/tomhultonharrop/Documents/Projects/cpp-handles)
+# GIT_REPOSITORY https://github.com/pr0g/cpp-handle-container.git GIT_TAG
+# ed1cdd6d17f4f8ee95de56ffa666e08f00986250)
 FetchContent_MakeAvailable(thh-handle-vector)
 
 add_library(${PROJECT_NAME} INTERFACE)
@@ -19,12 +20,20 @@ target_link_libraries(${PROJECT_NAME} INTERFACE thh-handle-vector)
 option(THH_PACKED_HASHTABLE_ENABLE_MEMORY "Enable memory profiling" OFF)
 option(THH_PACKED_HASHTABLE_ENABLE_TEST "Enable testing" OFF)
 option(THH_PACKED_HASHTABLE_ENABLE_BENCH "Enable benchmarking" OFF)
+option(THH_PACKED_HASHTABLE_ENABLE_ECS "Enable ECS experiment" OFF)
 
 if(THH_PACKED_HASHTABLE_ENABLE_MEMORY)
   add_executable(${PROJECT_NAME}-memory)
   target_sources(${PROJECT_NAME}-memory PRIVATE memory.cpp)
   target_link_libraries(${PROJECT_NAME}-memory PRIVATE ${PROJECT_NAME})
   target_compile_features(${PROJECT_NAME}-memory PRIVATE cxx_std_17)
+endif()
+
+if(THH_PACKED_HASHTABLE_ENABLE_ECS)
+  add_executable(${PROJECT_NAME}-ecs)
+  target_sources(${PROJECT_NAME}-ecs PRIVATE ecs.cpp)
+  target_link_libraries(${PROJECT_NAME}-ecs PRIVATE ${PROJECT_NAME})
+  target_compile_features(${PROJECT_NAME}-ecs PRIVATE cxx_std_17)
 endif()
 
 if(THH_PACKED_HASHTABLE_ENABLE_TEST)
@@ -59,8 +68,9 @@ if(THH_PACKED_HASHTABLE_ENABLE_BENCH)
                        GIT_REPOSITORY https://github.com/google/benchmark.git)
   FetchContent_Declare(abseil
                        GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git)
-  fetchcontent_Declare(robin-hood GIT_REPOSITORY
-                       https://github.com/martinus/robin-hood-hashing.git)
+  FetchContent_Declare(
+    robin-hood
+    GIT_REPOSITORY https://github.com/martinus/robin-hood-hashing.git)
   FetchContent_MakeAvailable(benchmark abseil robin-hood)
   add_executable(${PROJECT_NAME}-bench)
   target_sources(${PROJECT_NAME}-bench PRIVATE bench.cpp)
