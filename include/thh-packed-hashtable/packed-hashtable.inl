@@ -514,9 +514,17 @@ namespace thh
   template<typename Key, typename Value, typename Tag, typename RemovalPolicy>
   template<typename Compare>
   void base_packed_hashtable_t<Key, Value, Tag, RemovalPolicy>::sort(
-    Compare&& cmp)
+    Compare&& compare)
   {
-    values_.sort(std::forward<Compare>(cmp));
+    values_.sort(std::forward<Compare>(compare));
+  }
+
+  template<typename Key, typename Value, typename Tag, typename RemovalPolicy>
+  template<typename Predicate>
+  int32_t base_packed_hashtable_t<Key, Value, Tag, RemovalPolicy>::partition(
+    Predicate&& predicate)
+  {
+    return values_.partition(std::forward<Predicate>(predicate));
   }
 
   template<typename Key, typename Value, typename Tag>
@@ -528,7 +536,7 @@ namespace thh
 
   template<typename Key, typename Value, typename Tag>
   void packed_hashtable_rl_t<Key, Value, Tag>::remove_mapping(
-    typed_handle_t<Tag> handle)
+    const typed_handle_t<Tag> handle)
   {
     handles_to_keys_.erase(handle);
   }
@@ -555,7 +563,7 @@ namespace thh
 
   template<typename Key, typename Value, typename Tag>
   std::optional<Key> packed_hashtable_rl_t<Key, Value, Tag>::key_from_handle(
-    typed_handle_t<Tag> handle)
+    const typed_handle_t<Tag> handle)
   {
     if (auto key_it = handles_to_keys_.find(handle);
         key_it != handles_to_keys_.end()) {

@@ -106,7 +106,8 @@ namespace thh
     // returns the handle for a value at a given index
     // note: will return an invalid handle if the index is out of range
     [[nodiscard]] typed_handle_t<Tag> handle_from_index(int32_t index) const;
-    //
+    // returns the index (position) of a value for a given handle
+    // note: will return an empty optional if the handle is invalid
     [[nodiscard]] std::optional<int32_t> index_from_handle(
       typed_handle_t<Tag> handle) const;
     // returns the number of available handles (includes element storage that is
@@ -185,9 +186,12 @@ namespace thh
     [[nodiscard]] auto hend() const -> const_handle_iterator;
     // returns a const iterator to the end of the handles (sparse)
     [[nodiscard]] auto hcend() const -> const_handle_iterator;
-
+    // sorts elements in the container according to the provided comparison
     template<typename Compare>
-    void sort(Compare&& cmp);
+    void sort(Compare&& compare);
+    // partitions elements in the container according to the provided predicate
+    template<typename Predicate>
+    int32_t partition(Predicate&& predicate);
 
     // proxy to support friendly iteration for handles (see handle_iteration())
     // note: to be used with range based for loop
@@ -321,7 +325,8 @@ namespace thh
 
     // removes the element with equivalent handle
     bool remove(typed_handle_t<Tag> handle);
-    //
+    // returns the key for a given handle
+    // note: will return an empty optional if the handle is invalid
     std::optional<Key> key_from_handle(typed_handle_t<Tag> handle);
   };
 
