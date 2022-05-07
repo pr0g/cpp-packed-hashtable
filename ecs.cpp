@@ -72,13 +72,15 @@ int main(int argc, char** argv)
 
   thh::handle_vector_t<empty_t, struct entity_id_tag> entity_ids;
 
-  constexpr int EntityCount = 6;
+  constexpr int EntityCount = 12;
+
   std::vector<entity_id_t> entity_handles;
   entity_handles.reserve(EntityCount);
   for (int i = 0; i < EntityCount; ++i) {
     entity_handles.push_back(entity_ids.add());
   }
 
+  std::cout << "allocated entity ids\n";
   for (int i = 0; i < EntityCount; ++i) {
     auto handle = entity_ids.handle_from_index(i);
     std::cout << handle.id_ << ", ";
@@ -119,31 +121,27 @@ int main(int argc, char** argv)
     entity_id_t, physics_component_t, struct physics_tag>
     physics_components;
 
-  //  for (int i = 0; i < entity_handles.size(); ++i) {
-  //    transform_components.add(
-  //      {entity_handles[i], transform_component_t{(char)(97 + i)}});
-  //  }
-
+  // add transform components in a random order to entities
   transform_components.add({entity_handles[2], transform_component_t{'c'}});
   transform_components.add({entity_handles[1], transform_component_t{'b'}});
   transform_components.add({entity_handles[5], transform_component_t{'f'}});
   transform_components.add({entity_handles[4], transform_component_t{'e'}});
   transform_components.add({entity_handles[0], transform_component_t{'a'}});
   transform_components.add({entity_handles[3], transform_component_t{'d'}});
+  transform_components.add({entity_handles[8], transform_component_t{'i'}});
+  transform_components.add({entity_handles[7], transform_component_t{'h'}});
+  transform_components.add({entity_handles[11], transform_component_t{'l'}});
+  transform_components.add({entity_handles[6], transform_component_t{'g'}});
+  transform_components.add({entity_handles[10], transform_component_t{'k'}});
+  transform_components.add({entity_handles[9], transform_component_t{'j'}});
 
-  //  for (int i = 5; i < EntityCount; ++i) {
-  //  physics_components.add({entity_handles[9], physics_component_t{}});
-  //  physics_components.add({entity_handles[5], physics_component_t{}});
-  //  physics_components.add({entity_handles[7], physics_component_t{}});
-  //  physics_components.add({entity_handles[6], physics_component_t{}});
-  //  physics_components.add({entity_handles[8], physics_component_t{}});
+  // add physics components in a random order to half entities
   physics_components.add({entity_handles[4], physics_component_t{'e'}});
   physics_components.add({entity_handles[5], physics_component_t{'f'}});
   physics_components.add({entity_handles[0], physics_component_t{'a'}});
   physics_components.add({entity_handles[1], physics_component_t{'b'}});
   physics_components.add({entity_handles[3], physics_component_t{'d'}});
   physics_components.add({entity_handles[2], physics_component_t{'c'}});
-  //  }
 
   auto transform_components_display = [&transform_components] {
     std::cout << "transform components entity ids\n";
@@ -203,12 +201,6 @@ int main(int argc, char** argv)
     }
   }
 
-  physics_components.sort(
-    [&physics_value_order_entity_ids](int32_t lhs, int32_t rhs) {
-      return physics_value_order_entity_ids[lhs].id_
-           < physics_value_order_entity_ids[rhs].id_;
-    });
-
   std::vector<entity_id_t> transform_value_order_entity_ids;
   for (auto it = transform_components.vbegin();
        it != transform_components.vend(); ++it) {
@@ -220,65 +212,59 @@ int main(int argc, char** argv)
     }
   }
 
-  transform_components.sort(
-    [&transform_components, &physics_components,
-     &transform_value_order_entity_ids](int32_t lhs, int32_t rhs) {
-      // auto lhh = transform_components.handle_from_index(lhs);
-      // auto rhh = transform_components.handle_from_index(rhs);
-
-      // auto lhk = transform_components.key_from_handle(lhh);
-      // auto rhk = transform_components.key_from_handle(rhh);
-
-      return transform_value_order_entity_ids[lhs].id_
-           < transform_value_order_entity_ids[rhs].id_;
-    });
-
-  auto t0 = transform_components
-              .call_return(entity_handles[0], [](const auto v) { return v; })
-              .value();
-  auto t1 = transform_components
-              .call_return(entity_handles[1], [](const auto v) { return v; })
-              .value();
-  auto t2 = transform_components
-              .call_return(entity_handles[2], [](const auto v) { return v; })
-              .value();
-  auto t3 = transform_components
-              .call_return(entity_handles[3], [](const auto v) { return v; })
-              .value();
-  auto t4 = transform_components
-              .call_return(entity_handles[4], [](const auto v) { return v; })
-              .value();
-  auto t5 = transform_components
-              .call_return(entity_handles[5], [](const auto v) { return v; })
-              .value();
-
-  transform_components_display();
-  physics_components_display();
-
+  std::cout << "entity ids in transform component order\n";
   for (auto& value_order_entity_id : transform_value_order_entity_ids) {
     std::cout << value_order_entity_id.id_ << ", ";
   }
 
   std::cout << '\n';
 
+  std::cout << "entity ids in physics component order\n";
   for (auto& value_order_entity_id : physics_value_order_entity_ids) {
     std::cout << value_order_entity_id.id_ << ", ";
   }
 
   std::cout << '\n';
 
+  // find the smallest list of components (note: in this example we know physics
+  // components is the smallest list)
+
+  // partition all transform components so those in the first half all
+  // also have a physics component
+  // (partition larget set of components based on those in the smaller set or not)
+  auto second = transform_components.partition(
+    [&physics_components, &transform_components](const int32_t index) {
+      const auto handle = transform_components.handle_from_index(index);
+      return physics_components.has(
+        transform_components.key_from_handle(handle).value());
+    });
+
+  // sort first half (valid/left) of the transform components partition based on entity id
+  transform_components.sort(
+    0, second,
+    [&transform_value_order_entity_ids](const int32_t lhs, const int32_t rhs) {
+      return transform_value_order_entity_ids[lhs].id_
+           < transform_value_order_entity_ids[rhs].id_;
+    });
+
+  // sort physics components based on entity id
+  physics_components.sort(
+    [&physics_value_order_entity_ids](const int32_t lhs, const int32_t rhs) {
+      return physics_value_order_entity_ids[lhs].id_
+           < physics_value_order_entity_ids[rhs].id_;
+    });
+
+  transform_components_display();
+  physics_components_display();
+
+  // example ecs system - iterate
   auto physics_system_fn =
     [](transform_component_t& transform, physics_component_t& physics) {
-
+      std::cout << "transform: " << transform.id_ << " physics: " << physics.id_
+                << '\n';
     };
 
-  // find the smallest list of components
-  // partition other set of components based on those in the set or not
-  // sort valid (left) partition based on entity id
-  // iterate
-
-  // need to sort by shortest list of components
-
+  // iterate over shortest list of components
   auto t_it = transform_components.vbegin();
   auto p_it = physics_components.vbegin();
   for (;
@@ -286,49 +272,6 @@ int main(int argc, char** argv)
        ++p_it, ++t_it) {
     physics_system_fn(*t_it, *p_it);
   }
-
-  std::vector<int> outside_handles = {0, 1, 2, 3, 4, 5};
-  std::vector<int> internal_handles = {2, 0, 5, 1, 3, 4};
-  std::vector<char> internal_values = {'f', 'c', 'e', 'a', 'd', 'b'};
-
-  for (int lookup : outside_handles) {
-    std::cout << internal_values[internal_handles[lookup]] << ", ";
-  }
-
-  std::cout << '\n';
-
-  std::vector<int32_t> indices(6);
-  std::iota(indices.begin(), indices.end(), 0);
-  std::sort(
-    indices.begin(), indices.end(), [&](const int32_t lhs, const int32_t rhs) {
-      return internal_values[lhs] < internal_values[rhs];
-    });
-
-  for (int i = 0; i < internal_handles.size(); ++i) {
-    auto other = std::find(indices.begin(), indices.end(), internal_handles[i]);
-    if (other != indices.end()) {
-      internal_handles[i] = std::distance(indices.begin(), other);
-    }
-  }
-  thh::apply_permutation(internal_values, indices);
-
-  // std::sort(
-  //   internal_values.begin(), internal_values.end(), [&](const char lhs, const
-  //   char rhs) {
-  //     return lhs < rhs;
-  //   });
-
-  for (int internal_value : internal_values) {
-    std::cout << (char)internal_value << ", ";
-  }
-
-  std::cout << '\n';
-
-  for (int lookup : outside_handles) {
-    std::cout << internal_values[internal_handles[lookup]] << ", ";
-  }
-
-  std::cout << '\n';
 
   return 0;
 }

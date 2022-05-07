@@ -516,7 +516,15 @@ namespace thh
   void base_packed_hashtable_t<Key, Value, Tag, RemovalPolicy>::sort(
     Compare&& compare)
   {
-    values_.sort(std::forward<Compare>(compare));
+    sort(0, size(), std::forward<Compare>(compare));
+  }
+
+  template<typename Key, typename Value, typename Tag, typename RemovalPolicy>
+  template<typename Compare>
+  void base_packed_hashtable_t<Key, Value, Tag, RemovalPolicy>::sort(
+    const int32_t begin, const int32_t end, Compare&& compare)
+  {
+    values_.sort(begin, end, std::forward<Compare>(compare));
   }
 
   template<typename Key, typename Value, typename Tag, typename RemovalPolicy>

@@ -189,6 +189,11 @@ namespace thh
     // sorts elements in the container according to the provided comparison
     template<typename Compare>
     void sort(Compare&& compare);
+    // sorts elements in the container in the specified range according to the
+    // provided comparison
+    // begin - inclusive, end - exclusive
+    template<typename Compare>
+    void sort(int32_t begin, int32_t end, Compare&& compare);
     // partitions elements in the container according to the provided predicate
     template<typename Predicate>
     int32_t partition(Predicate&& predicate);
