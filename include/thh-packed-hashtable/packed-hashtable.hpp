@@ -332,7 +332,10 @@ namespace thh
     bool remove(typed_handle_t<Tag> handle);
     // returns the key for a given handle
     // note: will return an empty optional if the handle is invalid
-    std::optional<Key> key_from_handle(typed_handle_t<Tag> handle);
+    std::optional<Key> key_from_handle(typed_handle_t<Tag> handle) const;
+    // returns the key for a given index
+    // note: will return an empty optional if the index is out of range
+    std::optional<Key> key_from_index(int32_t index) const;
   };
 
   // removes all elements that pass the given predicate from the container

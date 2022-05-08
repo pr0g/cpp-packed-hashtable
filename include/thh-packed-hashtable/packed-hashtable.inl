@@ -571,13 +571,20 @@ namespace thh
 
   template<typename Key, typename Value, typename Tag>
   std::optional<Key> packed_hashtable_rl_t<Key, Value, Tag>::key_from_handle(
-    const typed_handle_t<Tag> handle)
+    const typed_handle_t<Tag> handle) const
   {
     if (auto key_it = handles_to_keys_.find(handle);
         key_it != handles_to_keys_.end()) {
       return *key_it->second;
     }
     return {};
+  }
+
+  template<typename Key, typename Value, typename Tag>
+  std::optional<Key> packed_hashtable_rl_t<Key, Value, Tag>::key_from_index(
+    const int32_t index) const
+  {
+    return key_from_handle(this->handle_from_index(index));
   }
 
   template<typename Key, typename Value, typename Tag, typename Pred>

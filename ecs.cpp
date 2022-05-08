@@ -191,22 +191,16 @@ int main(int argc, char** argv)
   std::vector<entity_id_t> physics_value_order_entity_ids;
   // physics components is smaller than transform
   // build entity id list for physics components
-  for (auto it = physics_components.vbegin(); it != physics_components.vend();
-       ++it) {
-    const auto handle = physics_components.handle_from_index(
-      static_cast<int32_t>(std::distance(physics_components.vbegin(), it)));
-    if (auto entity_id = physics_components.key_from_handle(handle);
+  for (int32_t index = 0; index < physics_components.size(); ++index) {
+    if (auto entity_id = physics_components.key_from_index(index);
         entity_id.has_value()) {
       physics_value_order_entity_ids.push_back(entity_id.value());
     }
   }
 
   std::vector<entity_id_t> transform_value_order_entity_ids;
-  for (auto it = transform_components.vbegin();
-       it != transform_components.vend(); ++it) {
-    const auto handle = transform_components.handle_from_index(
-      static_cast<int32_t>(std::distance(transform_components.vbegin(), it)));
-    if (auto entity_id = transform_components.key_from_handle(handle);
+  for (int32_t index = 0; index < transform_components.size(); ++index) {
+    if (auto entity_id = transform_components.key_from_index(index);
         entity_id.has_value()) {
       transform_value_order_entity_ids.push_back(entity_id.value());
     }
@@ -231,7 +225,8 @@ int main(int argc, char** argv)
 
   // partition all transform components so those in the first half all
   // also have a physics component
-  // (partition larget set of components based on those in the smaller set or not)
+  // (partition larget set of components based on those in the smaller set or
+  // not)
   auto second = transform_components.partition(
     [&physics_components, &transform_components](const int32_t index) {
       const auto handle = transform_components.handle_from_index(index);
@@ -239,7 +234,8 @@ int main(int argc, char** argv)
         transform_components.key_from_handle(handle).value());
     });
 
-  // sort first half (valid/left) of the transform components partition based on entity id
+  // sort first half (valid/left) of the transform components partition based on
+  // entity id
   transform_components.sort(
     0, second,
     [&transform_value_order_entity_ids](const int32_t lhs, const int32_t rhs) {
