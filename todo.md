@@ -15,7 +15,7 @@
 
 ## notes
 
-- `dense_map_t` stores an additional `28` bytes per element over `unordered_map`
+- `packed_hashtable_t` stores an additional `28` bytes per element over `unordered_map`
   - `20` bytes per element in the `handle_vector_t`
     - `16` bytes (per internal handles)
     - `4` bytes (per element id)
