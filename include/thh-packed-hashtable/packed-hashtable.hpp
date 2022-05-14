@@ -43,15 +43,16 @@ namespace thh
   // stored in an unordered_map and its values are the handles to the underlying
   // elements stored in the handle_vector_t
   template<
-    typename Key, typename Value, typename Tag = packed_hashtable_tag_t,
-    typename RemovalPolicy = struct empty_t>
+    typename Key, typename Value, typename Hash, typename KeyEqual,
+    typename Tag, typename RemovalPolicy = struct empty_t>
   class base_packed_hashtable_t
   {
   protected:
     // store for underlying values
     handle_vector_t<Value, Tag> values_;
     // key to handle mapping (key -> handle -> value)
-    std::unordered_map<Key, typed_handle_t<Tag>> keys_to_handles_;
+    std::unordered_map<Key, typed_handle_t<Tag>, Hash, KeyEqual>
+      keys_to_handles_;
 
   public:
     using key_value_type = std::pair<const Key, Value>;
@@ -283,13 +284,18 @@ namespace thh
 
   // packed_hashtable_t - a hybrid lookup container for efficient element
   // iteration at the cost of additional memory usage
-  template<typename Key, typename Value, typename Tag = packed_hashtable_tag_t>
+  template<
+    typename Key, typename Value, typename Hash = std::hash<Key>,
+    typename KeyEqual = std::equal_to<Key>,
+    typename Tag = packed_hashtable_tag_t>
   class packed_hashtable_t
     : public base_packed_hashtable_t<
-        Key, Value, Tag, packed_hashtable_t<Key, Value, Tag>>
+        Key, Value, Hash, KeyEqual, Tag,
+        packed_hashtable_t<Key, Value, Hash, KeyEqual, Tag>>
   {
     friend class base_packed_hashtable_t<
-      Key, Value, Tag, packed_hashtable_t<Key, Value, Tag>>;
+      Key, Value, Hash, KeyEqual, Tag,
+      packed_hashtable_t<Key, Value, Hash, KeyEqual, Tag>>;
 
     // empty noop functions, unused in packed_hashtable_t
     void add_mapping(typed_handle_t<Tag>, const Key*) {}
@@ -303,13 +309,18 @@ namespace thh
   // packed_hashtable_t contains an additional mapping from handles to keys,
   // this can be used to go from a value (while iterating) to a handle and then
   // to a key to fully remove the element from the container
-  template<typename Key, typename Value, typename Tag = packed_hashtable_tag_t>
+  template<
+    typename Key, typename Value, typename Hash = std::hash<Key>,
+    typename KeyEqual = std::equal_to<Key>,
+    typename Tag = packed_hashtable_tag_t>
   class packed_hashtable_rl_t
     : public base_packed_hashtable_t<
-        Key, Value, Tag, packed_hashtable_rl_t<Key, Value, Tag>>
+        Key, Value, Hash, KeyEqual, Tag,
+        packed_hashtable_rl_t<Key, Value, Hash, KeyEqual, Tag>>
   {
     friend class base_packed_hashtable_t<
-      Key, Value, Tag, packed_hashtable_rl_t<Key, Value, Tag>>;
+      Key, Value, Hash, KeyEqual, Tag,
+      packed_hashtable_rl_t<Key, Value, Hash, KeyEqual, Tag>>;
 
     // key to handle mapping (value -> handle -> key)
     std::unordered_map<
@@ -326,7 +337,8 @@ namespace thh
   public:
     // bring base remove function into scope
     using base_packed_hashtable_t<
-      Key, Value, Tag, packed_hashtable_rl_t<Key, Value, Tag>>::remove;
+      Key, Value, Hash, KeyEqual, Tag,
+      packed_hashtable_rl_t<Key, Value, Hash, KeyEqual, Tag>>::remove;
 
     // removes the element with equivalent handle
     bool remove(typed_handle_t<Tag> handle);
@@ -341,16 +353,22 @@ namespace thh
   // removes all elements that pass the given predicate from the container
   // note: using packed_hashtable_rl_t takes more memory but can map
   // from values to keys so performance is improved
-  template<typename Key, typename Value, typename Tag, typename Pred>
+  template<
+    typename Key, typename Value, typename Hash, typename KeyEqual,
+    typename Tag, typename Pred>
   int32_t remove_when(
-    packed_hashtable_rl_t<Key, Value, Tag>& packed_hashtable_rl, Pred pred);
+    packed_hashtable_rl_t<Key, Value, Hash, KeyEqual, Tag>& packed_hashtable_rl,
+    Pred pred);
 
   // removes all elements that pass the given predicate from the container
   // note: using packed_hashtable_t must iterate via handles to remove elements
   // which is much slower than using packed_hashtable_rl_t
-  template<typename Key, typename Value, typename Tag, typename Pred>
+  template<
+    typename Key, typename Value, typename Hash, typename KeyEqual,
+    typename Tag, typename Pred>
   int32_t remove_when(
-    packed_hashtable_t<Key, Value, Tag>& packed_hashtable, Pred pred);
+    packed_hashtable_t<Key, Value, Hash, KeyEqual, Tag>& packed_hashtable,
+    Pred pred);
 } // namespace thh
 
 #include "packed-hashtable.inl"
