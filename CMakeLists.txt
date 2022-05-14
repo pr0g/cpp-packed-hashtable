@@ -4,10 +4,9 @@ project(thh-packed-hashtable LANGUAGES CXX)
 include(FetchContent)
 
 FetchContent_Declare(
-  thh-handle-vector SOURCE_DIR
-                    /Users/tomhultonharrop/Documents/Projects/cpp-handles)
-# GIT_REPOSITORY https://github.com/pr0g/cpp-handle-container.git GIT_TAG
-# ed1cdd6d17f4f8ee95de56ffa666e08f00986250)
+  thh-handle-vector
+  GIT_REPOSITORY https://github.com/pr0g/cpp-handle-container.git
+  GIT_TAG 8a0ee9812c4034ec3859b64f529bc8beb215eb5d)
 FetchContent_MakeAvailable(thh-handle-vector)
 
 add_library(${PROJECT_NAME} INTERFACE)
