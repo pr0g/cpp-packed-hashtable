@@ -4,76 +4,28 @@
 #include <numeric>
 #include <thh-packed-hashtable/packed-hashtable.hpp>
 
-template<>
-struct std::hash<thh::typed_handle_t<struct entity_id_tag>>
-{
-  size_t operator()(
-    const thh::typed_handle_t<struct entity_id_tag>& handle) const
-  {
-    // based on boost hash combine function
-    // ref:
-    // boost.org/doc/libs/1_55_0/doc/html/hash/reference.html#boost.hash_combine
-    const auto hash_combine_fn = [](std::size_t& seed, const auto& v) {
-      std::hash<typename std::remove_const_t<
-        typename std::remove_reference_t<decltype(v)>>>
-        hasher;
-      seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    };
-
-    std::size_t seed = 0;
-    hash_combine_fn(seed, handle.gen_);
-    hash_combine_fn(seed, handle.id_);
-    return seed;
-  }
-};
-
 int main(int argc, char** argv)
 {
   struct transform_component_t
   {
-    char id_;
+    char id_; // debug identifier
   };
 
   struct physics_component_t
   {
-    char id_;
+    char id_; // debug identifier
   };
 
-  // struct entity_id_hash_t
-  // {
-  //   std::size_t operator()(const entity_id_t<Tag>& handle) const
-  //   {
-  //     // based on boost hash combine function
-  //     // ref:
-  //     //
-  //     boost.org/doc/libs/1_55_0/doc/html/hash/reference.html#boost.hash_combine
-  //     const auto hash_combine_fn = [](std::size_t& seed, const auto& v) {
-  //       std::hash<typename std::remove_const_t<
-  //         typename std::remove_reference_t<decltype(v)>>>
-  //         hasher;
-  //       seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-  //     };
-
-  //     std::size_t seed = 0;
-  //     hash_combine_fn(seed, handle.gen_);
-  //     hash_combine_fn(seed, handle.id_);
-  //     return seed;
-  //   }
-  // };
-
-  // thh::handle_vector_t<transform_component_t> transform_components;
-  // thh::handle_vector_t<physics_component_t> physics_components;
-
+  // note: in future this could potentially be used to store a bitmask for
+  // components that the entity has
   struct empty_t
   {
   };
 
   using entity_id_t = thh::typed_handle_t<struct entity_id_tag>;
-
   thh::handle_vector_t<empty_t, struct entity_id_tag> entity_ids;
 
   constexpr int EntityCount = 12;
-
   std::vector<entity_id_t> entity_handles;
   entity_handles.reserve(EntityCount);
   for (int i = 0; i < EntityCount; ++i) {
@@ -88,40 +40,19 @@ int main(int argc, char** argv)
 
   std::cout << '\n';
 
-  //  for (int i = (int)entity_handles.size() - 1; i >= 0; --i) {
-  //    if (i % 2 == 0) {
-  //      entity_ids.remove(entity_handles[i]);
-  //      entity_handles.erase(entity_handles.begin() + i);
-  //    }
-  //  }
-
-  //  for (int i = 0; i < EntityCount; ++i) {
-  //    auto handle = entity_ids.handle_from_index(i);
-  //    std::cout << handle.id_ << ", ";
-  //  }
-  //
-  //  std::cout << '\n';
-
-  //  for (int i = 0; i < EntityCount / 2; ++i) {
-  //    entity_handles.push_back(entity_ids.add());
-  //  }
-
-  //  for (int i = 0; i < EntityCount; ++i) {
-  //    auto handle = entity_ids.handle_from_index(i);
-  //    std::cout << handle.id_ << ", ";
-  //  }
-  //
-  //  std::cout << '\n';
-
   thh::packed_hashtable_rl_t<
-    entity_id_t, transform_component_t, struct transform_tag>
+    entity_id_t, transform_component_t,
+    thh::typed_handle_hash_t<struct entity_id_tag>, std::equal_to<entity_id_t>,
+    struct transform_tag>
     transform_components;
 
   thh::packed_hashtable_rl_t<
-    entity_id_t, physics_component_t, struct physics_tag>
+    entity_id_t, physics_component_t,
+    thh::typed_handle_hash_t<struct entity_id_tag>, std::equal_to<entity_id_t>,
+    struct physics_tag>
     physics_components;
 
-  // add transform components in a random order to entities
+  // add transform components in a random order to entities (12)
   transform_components.add({entity_handles[2], transform_component_t{'c'}});
   transform_components.add({entity_handles[1], transform_component_t{'b'}});
   transform_components.add({entity_handles[5], transform_component_t{'f'}});
@@ -135,7 +66,7 @@ int main(int argc, char** argv)
   transform_components.add({entity_handles[10], transform_component_t{'k'}});
   transform_components.add({entity_handles[9], transform_component_t{'j'}});
 
-  // add physics components in a random order to half entities
+  // add physics components in a random order to half entities (6)
   physics_components.add({entity_handles[4], physics_component_t{'e'}});
   physics_components.add({entity_handles[5], physics_component_t{'f'}});
   physics_components.add({entity_handles[0], physics_component_t{'a'}});
@@ -143,50 +74,29 @@ int main(int argc, char** argv)
   physics_components.add({entity_handles[3], physics_component_t{'d'}});
   physics_components.add({entity_handles[2], physics_component_t{'c'}});
 
-  auto transform_components_display = [&transform_components] {
-    std::cout << "transform components entity ids\n";
-    for (auto it = transform_components.vbegin();
-         it != transform_components.vend(); ++it) {
-      const auto handle = transform_components.handle_from_index(
-        static_cast<int32_t>(std::distance(transform_components.vbegin(), it)));
-      if (auto entity_id = transform_components.key_from_handle(handle);
-          entity_id.has_value()) {
-        std::cout << entity_id->id_ << ", ";
+  const auto components_display =
+    [](const auto& components, const std::string& component_name) {
+      std::cout << component_name << " entity ids\n";
+      for (auto it = components.vbegin(); it != components.vend(); ++it) {
+        const auto handle = components.handle_from_index(
+          static_cast<int32_t>(std::distance(components.vbegin(), it)));
+        if (auto entity_id = components.key_from_handle(handle);
+            entity_id.has_value()) {
+          std::cout << entity_id->id_ << ", ";
+        }
       }
-    }
-    std::cout << '\n';
+      std::cout << '\n';
 
-    std::cout << "transform component values\n";
-    for (const auto& v : transform_components.value_iteration()) {
-      std::cout << v.id_ << ", ";
-    }
-
-    std::cout << '\n';
-  };
-
-  auto physics_components_display = [&physics_components] {
-    std::cout << "physics components entity ids\n";
-    for (auto it = physics_components.vbegin(); it != physics_components.vend();
-         ++it) {
-      const auto handle = physics_components.handle_from_index(
-        static_cast<int32_t>(std::distance(physics_components.vbegin(), it)));
-      if (auto entity_id = physics_components.key_from_handle(handle);
-          entity_id.has_value()) {
-        std::cout << entity_id->id_ << ", ";
+      std::cout << component_name << " values\n";
+      for (const auto& v : components.value_iteration()) {
+        std::cout << v.id_ << ", ";
       }
-    }
-    std::cout << '\n';
 
-    std::cout << "physics component values\n";
-    for (const auto& v : physics_components.value_iteration()) {
-      std::cout << v.id_ << ", ";
-    }
+      std::cout << '\n';
+    };
 
-    std::cout << '\n';
-  };
-
-  transform_components_display();
-  physics_components_display();
+  components_display(transform_components, "transform component");
+  components_display(physics_components, "physics component");
 
   std::vector<entity_id_t> physics_value_order_entity_ids;
   // physics components is smaller than transform
@@ -250,8 +160,8 @@ int main(int argc, char** argv)
            < physics_value_order_entity_ids[rhs].id_;
     });
 
-  transform_components_display();
-  physics_components_display();
+  components_display(transform_components, "transform component");
+  components_display(physics_components, "physics component");
 
   // example ecs system - iterate
   auto physics_system_fn =
