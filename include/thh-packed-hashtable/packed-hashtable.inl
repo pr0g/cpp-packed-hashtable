@@ -321,7 +321,7 @@ namespace thh
   int32_t base_packed_hashtable_t<
     Key, Value, Hash, KeyEqual, Tag, RemovalPolicy>::size() const
   {
-    assert(keys_to_handles_.size() == values_.size());
+    assert(keys_to_handles_.size() == static_cast<size_t>(values_.size()));
     assert(values_.size() <= std::numeric_limits<int32_t>::max());
     return static_cast<int32_t>(values_.size());
   }
@@ -706,8 +706,9 @@ namespace thh
     if (this->values_.remove(handle)) {
       if (const auto handle_key = handles_to_keys_.find(handle);
           handle_key != handles_to_keys_.end()) {
+        const auto key = handle_key->second;
         handles_to_keys_.erase(handle_key);
-        return this->keys_to_handles_.erase(*handle_key->second) != 0;
+        return this->keys_to_handles_.erase(*key) != 0;
       }
     }
     return false;
@@ -742,7 +743,7 @@ namespace thh
     packed_hashtable_rl_t<Key, Value, Hash, KeyEqual, Tag>& packed_hashtable_rl,
     const Pred pred)
   {
-    auto old_size = packed_hashtable_rl.size();
+    const auto old_size = packed_hashtable_rl.size();
     for (auto it = packed_hashtable_rl.vbegin();
          it != packed_hashtable_rl.vend();) {
       if (pred(*it)) {
@@ -754,7 +755,7 @@ namespace thh
         ++it;
       }
     }
-    return old_size - packed_hashtable_rl.size();
+    return static_cast<int32_t>(old_size - packed_hashtable_rl.size());
   }
 
   template<
@@ -765,8 +766,7 @@ namespace thh
     Pred pred)
   {
     const auto old_size = packed_hashtable.size();
-    for (auto it = packed_hashtable.hbegin(), last = packed_hashtable.hend();
-         it != last;) {
+    for (auto it = packed_hashtable.hbegin(); it != packed_hashtable.hend();) {
       if (const auto result = packed_hashtable.call_return(
             it->second, [&pred](const auto& value) { return pred(value); });
           result.has_value() && result.value()) {

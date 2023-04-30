@@ -6,7 +6,7 @@ include(FetchContent)
 FetchContent_Declare(
   thh-handle-vector
   GIT_REPOSITORY https://github.com/pr0g/cpp-handle-container.git
-  GIT_TAG 0696bafe7e89da27e6b7de125b9026952c5fd457)
+  GIT_TAG 7d14c67f0f7d934ac6d89a2533aa11049ae310ad)
 FetchContent_MakeAvailable(thh-handle-vector)
 
 add_library(${PROJECT_NAME} INTERFACE)
@@ -39,7 +39,7 @@ if(THH_PACKED_HASHTABLE_ENABLE_TEST)
   FetchContent_Declare(
     doctest
     GIT_REPOSITORY https://github.com/onqtam/doctest.git
-    GIT_TAG f0ab4e793fa863d4a5929ff263ddd3bebec8767e)
+    GIT_TAG ae7a13539fb71f270b87eb2e874fbac80bc8dda2)
   FetchContent_MakeAvailable(doctest)
   add_executable(${PROJECT_NAME}-test)
   target_sources(${PROJECT_NAME}-test PRIVATE test.cpp)
@@ -64,7 +64,9 @@ endif()
 if(THH_PACKED_HASHTABLE_ENABLE_BENCH)
   set(BENCHMARK_ENABLE_TESTING OFF)
   FetchContent_Declare(benchmark
-                       GIT_REPOSITORY https://github.com/google/benchmark.git)
+                       GIT_REPOSITORY https://github.com/google/benchmark.git
+                       GIT_TAG main)
+  set(ABSL_PROPAGATE_CXX_STD ON)
   FetchContent_Declare(abseil
                        GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git)
   FetchContent_Declare(
