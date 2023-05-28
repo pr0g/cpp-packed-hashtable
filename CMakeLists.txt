@@ -6,7 +6,7 @@ include(FetchContent)
 FetchContent_Declare(
   thh-handle-vector
   GIT_REPOSITORY https://github.com/pr0g/cpp-handle-container.git
-  GIT_TAG 5c19e01ff326816d0c1ad45659f9c2876146d7ae)
+  GIT_TAG 502c9f2c89d74bd16578e1b2d7bb13c115abea5a)
 FetchContent_MakeAvailable(thh-handle-vector)
 
 add_library(${PROJECT_NAME} INTERFACE)

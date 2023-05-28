@@ -280,9 +280,14 @@ TEST_CASE("Iterator to next handle is returned after remove")
   packed_hashtable.add({5, "hello"});
   packed_hashtable.add({8, "world"});
 
-  const auto handle_it = packed_hashtable.remove(8);
+  std::vector<int> keys;
+  for (const auto key : packed_hashtable.handle_iteration()) {
+    keys.push_back(key.first);
+  }
 
-  CHECK(handle_it->first == 5);
+  const auto handle_it = packed_hashtable.remove(keys[0]);
+
+  CHECK(handle_it->first == keys[1]);
 }
 
 TEST_CASE("Values can be removed via iteration")
@@ -359,13 +364,13 @@ TEST_CASE("Iterate over all added handles")
     const auto found = std::find_if(
       expected_handle_its.begin(), expected_handle_its.end(),
       [h](const auto handle) { return handle.first->second == h.second; });
-    CHECK(found);
+    CHECK(found != expected_handle_its.end());
   }
 }
 
 TEST_CASE("Iterate over all added values")
 {
-  using std::string_literals::operator""s;
+  using namespace std::string_literals;
   thh::packed_hashtable_t<int, std::string> packed_hashtable;
   packed_hashtable.add({1, "one"s});
   packed_hashtable.add({2, "two"s});
@@ -381,14 +386,14 @@ TEST_CASE("Iterate over all added values")
     const auto found = std::find_if(
       expected_key_values.begin(), expected_key_values.end(),
       [v](const auto key_value) { return key_value.second == v; });
-    CHECK(found);
+    CHECK(found != expected_key_values.end());
   }
 
   for ([[maybe_unused]] auto& v : packed_hashtable.value_iteration()) {
     const auto found = std::find_if(
       expected_key_values.begin(), expected_key_values.end(),
       [v](const auto key_value) { return key_value.second == v; });
-    CHECK(found);
+    CHECK(found != expected_key_values.end());
   }
 }
 
