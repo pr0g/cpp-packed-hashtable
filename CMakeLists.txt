@@ -2,17 +2,19 @@ cmake_minimum_required(VERSION 3.15)
 project(thh-packed-hashtable LANGUAGES CXX)
 
 include(FetchContent)
+include(GNUInstallDirs)
 
 FetchContent_Declare(
   thh-handle-vector
   GIT_REPOSITORY https://github.com/pr0g/cpp-handle-container.git
-  GIT_TAG d83c44576b28a8056240dba6bcc2e008ebf76e1c)
+  GIT_TAG df1c9cc09ecdd5c3e03fbc2ca6dbd3da10ef6135)
 FetchContent_MakeAvailable(thh-handle-vector)
 
 add_library(${PROJECT_NAME} INTERFACE)
 target_include_directories(
   ${PROJECT_NAME}
-  INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+  INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 target_link_libraries(${PROJECT_NAME} INTERFACE thh-handle-vector)
 
@@ -63,9 +65,10 @@ endif()
 
 if(THH_PACKED_HASHTABLE_ENABLE_BENCH)
   set(BENCHMARK_ENABLE_TESTING OFF)
-  FetchContent_Declare(benchmark
-                       GIT_REPOSITORY https://github.com/google/benchmark.git
-                       GIT_TAG main)
+  FetchContent_Declare(
+    benchmark
+    GIT_REPOSITORY https://github.com/google/benchmark.git
+    GIT_TAG main)
   set(ABSL_PROPAGATE_CXX_STD ON)
   FetchContent_Declare(abseil
                        GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git)
@@ -84,3 +87,19 @@ if(THH_PACKED_HASHTABLE_ENABLE_BENCH)
             -pedantic>)
   target_compile_features(${PROJECT_NAME}-bench PRIVATE cxx_std_17)
 endif()
+
+install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}-config)
+
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/${PROJECT_NAME}
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+install(
+  EXPORT ${PROJECT_NAME}-config
+  NAMESPACE ${PROJECT_NAME}::
+  FILE ${PROJECT_NAME}-targets.cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+
+configure_file(${PROJECT_NAME}-config.cmake.in ${PROJECT_NAME}-config.cmake
+               @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})

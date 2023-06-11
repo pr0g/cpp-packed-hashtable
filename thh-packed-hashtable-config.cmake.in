@@ -1,0 +1,3 @@
+include(CMakeFindDependencyMacro)
+find_dependency(thh-handle-vector)
+include(${CMAKE_CURRENT_LIST_DIR}/thh-packed-hashtable-targets.cmake)
