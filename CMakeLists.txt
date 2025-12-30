@@ -7,7 +7,7 @@ include(GNUInstallDirs)
 FetchContent_Declare(
   thh-handle-vector
   GIT_REPOSITORY https://github.com/pr0g/cpp-handle-container.git
-  GIT_TAG 4ec2659f62afcf3c1da9ceccd34b1bce8ea1c84d)
+  GIT_TAG fca525ac784c9b714bfd956821fa6410244561b6)
 FetchContent_MakeAvailable(thh-handle-vector)
 
 add_library(${PROJECT_NAME} INTERFACE)
