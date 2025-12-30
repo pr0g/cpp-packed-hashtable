@@ -7,7 +7,7 @@ include(GNUInstallDirs)
 FetchContent_Declare(
   thh-handle-vector
   GIT_REPOSITORY https://github.com/pr0g/cpp-handle-container.git
-  GIT_TAG df1c9cc09ecdd5c3e03fbc2ca6dbd3da10ef6135)
+  GIT_TAG 4ec2659f62afcf3c1da9ceccd34b1bce8ea1c84d)
 FetchContent_MakeAvailable(thh-handle-vector)
 
 add_library(${PROJECT_NAME} INTERFACE)
@@ -41,7 +41,7 @@ if(THH_PACKED_HASHTABLE_ENABLE_TEST)
   FetchContent_Declare(
     doctest
     GIT_REPOSITORY https://github.com/onqtam/doctest.git
-    GIT_TAG ae7a13539fb71f270b87eb2e874fbac80bc8dda2)
+    GIT_TAG 1da23a3e8119ec5cce4f9388e91b065e20bf06f5)
   FetchContent_MakeAvailable(doctest)
   add_executable(${PROJECT_NAME}-test)
   target_sources(${PROJECT_NAME}-test PRIVATE test.cpp)
