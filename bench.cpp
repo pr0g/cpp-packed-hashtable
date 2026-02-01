@@ -177,6 +177,32 @@ static void iterate_object_t_in_unordered_map_by_key_value_pair(
   }
 }
 
+// iterate the unordered_map using key/pointer iteration to std::vector backing
+// container, reading the first byte of every element (object_t of varying size)
+template<typename T>
+static void iterate_object_t_in_unordered_map_by_key_pointer_pair(
+  benchmark::State& state)
+{
+  std::vector<T> backing;
+  backing.reserve(state.range(0));
+
+  std::unordered_map<std::string, T*> unordered_map;
+  unordered_map.reserve(state.range(0));
+  for (int i = 0; i < state.range(0); ++i) {
+    backing.emplace_back();
+    unordered_map.insert(
+      {std::string("name") + std::to_string(i), &backing.back()});
+  }
+
+  for ([[maybe_unused]] auto _ : state) {
+    char data_element = 0;
+    std::for_each(
+      unordered_map.begin(), unordered_map.end(),
+      [&data_element](auto& value) { data_element = value.second->data_[0]; });
+    benchmark::DoNotOptimize(data_element);
+  }
+}
+
 // iterate the flat_hash_map using key/value iteration, reading the first byte
 // of every element (object_t of varying size)
 template<typename T>
@@ -524,6 +550,39 @@ BENCHMARK_TEMPLATE(
   ->Range(32, 8 << 13);
 
 BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_map_by_key_pointer_pair, object_t<32>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_map_by_key_pointer_pair, object_t<64>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_map_by_key_pointer_pair, object_t<128>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_map_by_key_pointer_pair, object_t<256>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_map_by_key_pointer_pair, object_t<512>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_map_by_key_pointer_pair, object_t<1024>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_map_by_key_pointer_pair, object_t<2048>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_map_by_key_pointer_pair, object_t<4096>)
+  ->RangeMultiplier(2)
+  ->Range(32, 8 << 13);
+
+BENCHMARK_TEMPLATE(
   iterate_object_t_in_flat_hash_map_by_key_value_pair, object_t<32>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
@@ -683,5 +742,16 @@ BENCHMARK_TEMPLATE(
   iterate_object_t_in_packed_hashtable_by_value, object_t<4096>)
   ->RangeMultiplier(2)
   ->Range(32, 8 << 13);
+
+// used to capture effects of Data Translation Lookaside Buffer thrashing
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_map_by_key_value_pair, object_t<4096>)
+  ->DenseRange(40, 250, 5);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_unordered_map_by_key_pointer_pair, object_t<4096>)
+  ->DenseRange(40, 250, 5);
+BENCHMARK_TEMPLATE(
+  iterate_object_t_in_packed_hashtable_by_value, object_t<4096>)
+  ->DenseRange(40, 250, 5);
 
 BENCHMARK_MAIN();
