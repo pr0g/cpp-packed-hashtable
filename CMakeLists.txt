@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.28)
 project(thh-packed-hashtable LANGUAGES CXX)
 
 include(FetchContent)
@@ -64,22 +64,27 @@ if(THH_PACKED_HASHTABLE_ENABLE_TEST)
 endif()
 
 if(THH_PACKED_HASHTABLE_ENABLE_BENCH)
+  set(CMAKE_CXX_STANDARD 17)
   set(BENCHMARK_ENABLE_TESTING OFF)
   FetchContent_Declare(
     benchmark
     GIT_REPOSITORY https://github.com/google/benchmark.git
     GIT_TAG main)
   set(ABSL_PROPAGATE_CXX_STD ON)
-  FetchContent_Declare(abseil
-                       GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git)
+  FetchContent_Declare(
+    abseil
+    GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git
+    GIT_TAG 0e5031d3c00d8a482cd5705b5d006518447f39da)
   FetchContent_Declare(
     robin-hood
-    GIT_REPOSITORY https://github.com/martinus/robin-hood-hashing.git)
+    GIT_REPOSITORY https://github.com/martinus/robin-hood-hashing.git
+    GIT_TAG 7697343363af4cc3f42cab17be49e6af9ab181e2)
   FetchContent_MakeAvailable(benchmark abseil robin-hood)
   add_executable(${PROJECT_NAME}-bench)
   target_sources(${PROJECT_NAME}-bench PRIVATE bench.cpp)
-  target_link_libraries(${PROJECT_NAME}-bench ${PROJECT_NAME} benchmark
-                        absl::flat_hash_map robin_hood)
+  target_link_libraries(
+    ${PROJECT_NAME}-bench PRIVATE ${PROJECT_NAME} benchmark absl::flat_hash_map
+                                  robin_hood)
   target_compile_options(
     ${PROJECT_NAME}-bench
     PRIVATE $<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/W4 /WX>
